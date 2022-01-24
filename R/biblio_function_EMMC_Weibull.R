@@ -1,34 +1,56 @@
 
 ###------------------------------------------------------------------------------------------------
-# funcao para gerar da log condicional completa da fragilidade, wk (sendo k o indice de grupo)
+# Funcao para gerar da log condicional completa da fragilidade, wk (sendo k o indice de grupo)
 ###------------------------------------------------------------------------------------------------
-
 
 log_cond_wi <- function(w_k_aux,Alpha,delta_T,delta_C,X_T,X_C, Betas_T,Betas_C,risco_a_T,risco_a_C,Sigma2){
 
 
   w_k <- log(w_k_aux/(1-w_k_aux))
-  pred_linear_T <- exp((X_T[,]%*%Betas_T)+w_k)
-  pred_linear_C <- exp((X_C[,]%*%Betas_C)+Alpha*w_k)
+
+  if (ncol(t(t(X_T))) == 1)
+  {
+    pred_linear_T <- exp((t(t(X_T))*Betas_T)+w_k)
+    pred_linear_C <- exp((t(t(X_C))*Betas_C)+Alpha*w_k)
+  }
+
+  else
+  {
+    pred_linear_T <- exp((X_T[,]%*%Betas_T)+w_k)
+    pred_linear_C <- exp((X_C[,]%*%Betas_C)+Alpha*w_k)
+  }
 
   log_vero_w <- sum(delta_T*(w_k) - risco_a_T*pred_linear_T + delta_C*Alpha*(w_k) - risco_a_C*pred_linear_C) -((w_k^2)/(2*Sigma2))- log(w_k_aux*(1-w_k_aux))
 
-  return( log_vero_w)
+  return(log_vero_w)
 }
 
-# funcao usada no arms
-support_wi <-  function(w_k_aux,Alpha,delta_T,delta_C,X_T,X_C, Betas_T,Betas_C,risco_a_T,risco_a_C,Sigma2){(w_k_aux>0)*(w_k_aux<1)}
+# funcao utilizada no arms
+support_wi <-  function(w_k_aux,Alpha,delta_T,delta_C,X_T,X_C,Betas_T,Betas_C,risco_a_T,risco_a_C,Sigma2){(w_k_aux>0)*(w_k_aux<1)}
 
-###-----------------------------------------------------------------------------------------------
-#funcoes para estimar os parametros dos tempos de falha, funcao usando multiroot
+###-----------------------------------------------------------------------------------
+# Funcoes para estimar os parametros dos tempos de falha, funcao usando multiroot
+###-----------------------------------------------------------------------------------
 
-modelo_T_Weibull <-  function(param_t, t, X_T,delta.t,bi)
+modelo_T_Weibull <-  function(param_t, t, X_T, delta.t, bi)
 {
   risco_a_T <- (t^exp(param_t[1]))*exp(param_t[2])
-# pred_T <- exp(X_T[,]%*%param_t[3:6])*rowMeans(exp(bi[,]))
-#  w_kl_beta_T <- risco_a_T*pred_T
 
-  if(ncol(X_C) == 3)
+  if(ncol(t(t(X_T))) == 1)
+  {
+    pred_T <- exp(t(t(X_T))*param_t[3])*rowMeans(exp(bi[,])) #MUDAR MULT VETOR
+    w_kl_beta_T <- risco_a_T*pred_T
+    w_kl_beta_T_num <- cbind(w_kl_beta_T)*X_T
+  }
+
+  if(ncol(X_T) == 2)
+  {
+    pred_T <- exp(X_T[,]%*%param_t[3:4])*rowMeans(exp(bi[,]))
+    w_kl_beta_T <- risco_a_T*pred_T
+    w_kl_beta_T_num <- cbind(w_kl_beta_T, w_kl_beta_T)*X_T
+  }
+
+  if(ncol(X_T) == 3)
   {
     pred_T <- exp(X_T[,]%*%param_t[3:5])*rowMeans(exp(bi[,]))
     w_kl_beta_T <- risco_a_T*pred_T
@@ -37,16 +59,57 @@ modelo_T_Weibull <-  function(param_t, t, X_T,delta.t,bi)
 
   if(ncol(X_T) == 4)
   {
-   pred_T <- exp(X_T[,]%*%param_t[3:6])*rowMeans(exp(bi[,]))
-   w_kl_beta_T <- risco_a_T*pred_T
-   w_kl_beta_T_num <- cbind(w_kl_beta_T, w_kl_beta_T, w_kl_beta_T, w_kl_beta_T)*X_T
+    pred_T <- exp(X_T[,]%*%param_t[3:6])*rowMeans(exp(bi[,]))
+    w_kl_beta_T <- risco_a_T*pred_T
+    w_kl_beta_T_num <- cbind(w_kl_beta_T, w_kl_beta_T, w_kl_beta_T, w_kl_beta_T)*X_T
+  }
+
+  if(ncol(X_T) == 5)
+  {
+    pred_T <- exp(X_T[,]%*%param_t[3:7])*rowMeans(exp(bi[,]))
+    w_kl_beta_T <- risco_a_T*pred_T
+    w_kl_beta_T_num <- cbind(w_kl_beta_T, w_kl_beta_T, w_kl_beta_T, w_kl_beta_T, w_kl_beta_T)*X_T
+  }
+
+  if(ncol(X_T) == 6)
+  {
+    pred_T <- exp(X_T[,]%*%param_t[3:8])*rowMeans(exp(bi[,]))
+    w_kl_beta_T <- risco_a_T*pred_T
+    w_kl_beta_T_num <- cbind(w_kl_beta_T, w_kl_beta_T, w_kl_beta_T, w_kl_beta_T, w_kl_beta_T, w_kl_beta_T)*X_T
+  }
+
+  if(ncol(X_T) == 7)
+  {
+    pred_T <- exp(X_T[,]%*%param_t[3:9])*rowMeans(exp(bi[,]))
+    w_kl_beta_T <- risco_a_T*pred_T
+    w_kl_beta_T_num <- cbind(w_kl_beta_T, w_kl_beta_T, w_kl_beta_T, w_kl_beta_T, w_kl_beta_T, w_kl_beta_T, w_kl_beta_T)*X_T
+  }
+
+  if(ncol(X_T) == 8)
+  {
+    pred_T <- exp(X_T[,]%*%param_t[3:10])*rowMeans(exp(bi[,]))
+    w_kl_beta_T <- risco_a_T*pred_T
+    w_kl_beta_T_num <- cbind(w_kl_beta_T, w_kl_beta_T, w_kl_beta_T, w_kl_beta_T, w_kl_beta_T, w_kl_beta_T, w_kl_beta_T, w_kl_beta_T)*X_T
+  }
+
+  if(ncol(X_T) == 9)
+  {
+    pred_T <- exp(X_T[,]%*%param_t[3:11])*rowMeans(exp(bi[,]))
+    w_kl_beta_T <- risco_a_T*pred_T
+    w_kl_beta_T_num <- cbind(w_kl_beta_T, w_kl_beta_T, w_kl_beta_T, w_kl_beta_T, w_kl_beta_T, w_kl_beta_T, w_kl_beta_T, w_kl_beta_T, w_kl_beta_T)*X_T
+  }
+
+  if(ncol(X_T) == 10)
+  {
+    pred_T <- exp(X_T[,]%*%param_t[3:12])*rowMeans(exp(bi[,]))
+    w_kl_beta_T <- risco_a_T*pred_T
+    w_kl_beta_T_num <- cbind(w_kl_beta_T, w_kl_beta_T, w_kl_beta_T, w_kl_beta_T, w_kl_beta_T, w_kl_beta_T, w_kl_beta_T, w_kl_beta_T, w_kl_beta_T, w_kl_beta_T)*X_T
   }
 
   U_T_1 <- colSums(X_T*delta.t - w_kl_beta_T_num)
   w_kl_alpha_T_num <- w_kl_beta_T*log(t)*exp(param_t[1])
   U_alphaT <-  colSums(delta.t*(1 + exp(param_t[1])*log(t)) - w_kl_alpha_T_num)
 
-  #w_kl_lambda_T_num <- (t^(param_t[1]))*pred_T
   w_kl_lambda_T_num  <- w_kl_beta_T
   U_lambdaT <-  colSums(delta.t*(1) - w_kl_lambda_T_num)
 
@@ -54,12 +117,28 @@ modelo_T_Weibull <-  function(param_t, t, X_T,delta.t,bi)
 }
 
 ###-----------------------------------------------------------------------------------------------
-#funcoes para estimar os parametros dos tempos de censura, funcao usando multiroot
+# Funcoes para estimar os parametros dos tempos de censura, funcao usando multiroot
+###-----------------------------------------------------------------------------------------------
 
-modelo_C_Weibull <-  function(param_c, t, X_C,delta.c,bi){
-
+modelo_C_Weibull <-  function(param_c, t, X_C, delta.c, bi)
+{
   risco_a_C <- (t^exp(param_c[1]))*exp(param_c[2])
-# pred_C <- exp(X_C[,]%*%param_c[4:7])*rowMeans(exp(param_c[3]*bi[,]))
+
+  if(ncol(t(t(X_T))) == 1)
+  {
+    pred_C <- exp(t(t(X_C))*param_c[4])*rowMeans(exp(param_c[3]*bi[,]))
+    w_kl_beta_C <- risco_a_C*pred_C
+    w_kl_beta_C_num <- cbind(w_kl_beta_C)*X_C
+    w_kl_alpha_num <- risco_a_C*exp(t(t(X_C))*param_c[4])*rowMeans(bi*exp(param_c[3]*bi[,]))
+  }
+
+  if(ncol(X_C) == 2)
+  {
+    pred_C <- exp(X_C[,]%*%param_c[4:5])*rowMeans(exp(param_c[3]*bi[,]))
+    w_kl_beta_C <- risco_a_C*pred_C
+    w_kl_beta_C_num <- cbind(w_kl_beta_C, w_kl_beta_C)*X_C
+    w_kl_alpha_num <- risco_a_C*exp(X_C[,]%*%param_c[4:5])*rowMeans(bi*exp(param_c[3]*bi[,]))
+  }
 
   if(ncol(X_C) == 3)
   {
@@ -67,7 +146,6 @@ modelo_C_Weibull <-  function(param_c, t, X_C,delta.c,bi){
     w_kl_beta_C <- risco_a_C*pred_C
     w_kl_beta_C_num <- cbind(w_kl_beta_C, w_kl_beta_C, w_kl_beta_C)*X_C
     w_kl_alpha_num <- risco_a_C*exp(X_C[,]%*%param_c[4:6])*rowMeans(bi*exp(param_c[3]*bi[,]))
-
   }
 
   if(ncol(X_C) == 4)
@@ -76,359 +154,215 @@ modelo_C_Weibull <-  function(param_c, t, X_C,delta.c,bi){
     w_kl_beta_C <- risco_a_C*pred_C
     w_kl_beta_C_num <- cbind(w_kl_beta_C, w_kl_beta_C, w_kl_beta_C, w_kl_beta_C)*X_C
     w_kl_alpha_num <- risco_a_C*exp(X_C[,]%*%param_c[4:7])*rowMeans(bi*exp(param_c[3]*bi[,]))
+  }
 
+  if(ncol(X_C) == 5)
+  {
+    pred_C <- exp(X_C[,]%*%param_c[4:8])*rowMeans(exp(param_c[3]*bi[,]))
+    w_kl_beta_C <- risco_a_C*pred_C
+    w_kl_beta_C_num <- cbind(w_kl_beta_C, w_kl_beta_C, w_kl_beta_C, w_kl_beta_C, w_kl_beta_C)*X_C
+    w_kl_alpha_num <- risco_a_C*exp(X_C[,]%*%param_c[4:8])*rowMeans(bi*exp(param_c[3]*bi[,]))
+  }
+
+  if(ncol(X_C) == 6)
+  {
+    pred_C <- exp(X_C[,]%*%param_c[4:9])*rowMeans(exp(param_c[3]*bi[,]))
+    w_kl_beta_C <- risco_a_C*pred_C
+    w_kl_beta_C_num <- cbind(w_kl_beta_C, w_kl_beta_C, w_kl_beta_C, w_kl_beta_C, w_kl_beta_C, w_kl_beta_C)*X_C
+    w_kl_alpha_num <- risco_a_C*exp(X_C[,]%*%param_c[4:9])*rowMeans(bi*exp(param_c[3]*bi[,]))
+  }
+
+  if(ncol(X_C) == 7)
+  {
+    pred_C <- exp(X_C[,]%*%param_c[4:10])*rowMeans(exp(param_c[3]*bi[,]))
+    w_kl_beta_C <- risco_a_C*pred_C
+    w_kl_beta_C_num <- cbind(w_kl_beta_C, w_kl_beta_C, w_kl_beta_C, w_kl_beta_C, w_kl_beta_C, w_kl_beta_C, w_kl_beta_C)*X_C
+    w_kl_alpha_num <- risco_a_C*exp(X_C[,]%*%param_c[4:10])*rowMeans(bi*exp(param_c[3]*bi[,]))
+  }
+
+  if(ncol(X_C) == 8)
+  {
+    pred_C <- exp(X_C[,]%*%param_c[4:11])*rowMeans(exp(param_c[3]*bi[,]))
+    w_kl_beta_C <- risco_a_C*pred_C
+    w_kl_beta_C_num <- cbind(w_kl_beta_C, w_kl_beta_C, w_kl_beta_C, w_kl_beta_C, w_kl_beta_C, w_kl_beta_C, w_kl_beta_C, w_kl_beta_C)*X_C
+    w_kl_alpha_num <- risco_a_C*exp(X_C[,]%*%param_c[4:11])*rowMeans(bi*exp(param_c[3]*bi[,]))
+  }
+
+  if(ncol(X_C) == 9)
+  {
+    pred_C <- exp(X_C[,]%*%param_c[4:12])*rowMeans(exp(param_c[3]*bi[,]))
+    w_kl_beta_C <- risco_a_C*pred_C
+    w_kl_beta_C_num <- cbind(w_kl_beta_C, w_kl_beta_C, w_kl_beta_C, w_kl_beta_C, w_kl_beta_C, w_kl_beta_C, w_kl_beta_C, w_kl_beta_C, w_kl_beta_C)*X_C
+    w_kl_alpha_num <- risco_a_C*exp(X_C[,]%*%param_c[4:12])*rowMeans(bi*exp(param_c[3]*bi[,]))
+  }
+
+  if(ncol(X_C) == 10)
+  {
+    pred_C <- exp(X_C[,]%*%param_c[4:13])*rowMeans(exp(param_c[3]*bi[,]))
+    w_kl_beta_C <- risco_a_C*pred_C
+    w_kl_beta_C_num <- cbind(w_kl_beta_C, w_kl_beta_C, w_kl_beta_C, w_kl_beta_C, w_kl_beta_C, w_kl_beta_C, w_kl_beta_C, w_kl_beta_C, w_kl_beta_C, w_kl_beta_C)*X_C
+    w_kl_alpha_num <- risco_a_C*exp(X_C[,]%*%param_c[4:13])*rowMeans(bi*exp(param_c[3]*bi[,]))
   }
 
   U_betas <- colSums(X_C*delta.c - w_kl_beta_C_num)
-# w_kl_alpha_num <- risco_a_C*exp(X_C[,]%*%param_c[4:7])*rowMeans(bi*exp(param_c[3]*bi[,]))
   U_alpha <- colSums(delta.c*rowMeans(bi[,]) - w_kl_alpha_num)
   w_kl_alpha_C_num <- w_kl_beta_C*log(t)*exp(param_c[1])
   U_alphaC <-  colSums(delta.c*(1 + exp(param_c[1])*log(t)) - w_kl_alpha_C_num)
 
-  #w_kl_lambda_C_num <- (t^(param_c[1]))*pred_C
   w_kl_lambda_C_num   <- w_kl_beta_C
   U_lambdaC <-  colSums(delta.c*(1) - w_kl_lambda_C_num)
 
   c(U_alphaC=U_alphaC,U_lambdaC=U_lambdaC,U_alpha=U_alpha,U_betas = U_betas)
 }
 
-
-###---------------------------------------------------------------------------------------------------------------------------
-#funcoes para calcular o vetor com as derivadas de primeira ordem
-
+###-----------------------------------------------------------------------
+# Funcoes para calcular o vetor com as derivadas de primeira ordem
+###-----------------------------------------------------------------------
 
 Esp_DerivPrimOrdem <-  function(t,delta_T, delta_C, X_T, X_C, beta_T, beta_C,alpha,Sigma2, alpha_T, alpha_C,lambda_T, lambda_C, w_k_grupo, ident){
   wk = w_k_grupo[ident,]
   num_param <- length(beta_T)+2+length(beta_C)+2+length(alpha)+length(Sigma2)
-  deriv1 <- matrix(NA,num_param,ncol(wk))  #vetor que com as derivadas de primeira ordem,
-
+  deriv1 <- matrix(NA,num_param,ncol(wk))  #vetor que com as derivadas de primeira ordem
+  p <- ncol(X_T)
+  q <- ncol(X_C)
   pred_T <- as.vector(exp(X_T%*%beta_T))
   pred_C <- as.vector(exp(X_C%*%beta_C))
   Delta_t <- delta_T%*%t(rep(1,ncol(wk)))
   Delta_c <- delta_C%*%t(rep(1,ncol(wk)))
-  p <- ncol(X_T)
-  q <- ncol(X_C)
 
-  #derivada de alpha.t
   deriv1[1,] <- colSums(Delta_t*(alpha_T^(-1) + log(t)) - (t^(alpha_T))*log(t)*lambda_T*pred_T*exp(wk))
 
-  #derivada de lambda.t
   deriv1[2,] <- colSums(Delta_t*(lambda_T^(-1)) - (t^(alpha_T))*pred_T*exp(wk))
 
-  #derivada do vetor beta_T
   for (i in 1:p){
-  deriv1[2+i,] <- colSums(Delta_t*(X_T[,i]) - (t^(alpha_T))*lambda_T*pred_T*X_T[,i]*exp(wk))
+    deriv1[2+i,] <- colSums(Delta_t*(X_T[,i]) - (t^(alpha_T))*lambda_T*pred_T*X_T[,i]*exp(wk))
   }
-  # #derivada de beta_T_1
-  # deriv1[3,] <- colSums(Delta_t*(X_T[,1]) - (t^(alpha_T))*lambda_T*pred_T*X_T[,1]*exp(wk))
-  # #derivada de beta_T_2
-  # deriv1[4,] <- colSums(Delta_t*(X_T[,2]) - (t^(alpha_T))*lambda_T*pred_T*X_T[,2]*exp(wk))
-  # #derivada de beta_T_3
-  # deriv1[5,] <- colSums(Delta_t*(X_T[,3]) - (t^(alpha_T))*lambda_T*pred_T*X_T[,3]*exp(wk))
-  # #derivada de beta_T_4
-  # deriv1[6,] <- colSums(Delta_t*(X_T[,4]) - (t^(alpha_T))*lambda_T*pred_T*X_T[,4]*exp(wk))
 
-  #derivada de alpha.c
   deriv1[3+p,] <- colSums(Delta_c*(alpha_C^(-1) + log(t)) - (t^(alpha_C))*log(t)*lambda_C*pred_C*exp(alpha*wk))
 
-  #derivada de lambda.c
   deriv1[4+p,] <- colSums(Delta_c*(lambda_C^(-1)) - (t^(alpha_C))*pred_C*exp(alpha*wk))
 
-  #derivada do vetor beta_C
   for (i in 1:q){
-  deriv1[4+p+i,] <- colSums(Delta_c*(X_C[,i]) - (t^(alpha_C))*lambda_C*pred_C*X_C[,i]*exp(alpha*wk))
+    deriv1[4+p+i,] <- colSums(Delta_c*(X_C[,i]) - (t^(alpha_C))*lambda_C*pred_C*X_C[,i]*exp(alpha*wk))
   }
 
-  # #derivada de beta_C_1
-  # deriv1[9,] <- colSums(Delta_c*(X_C[,1]) - (t^(alpha_C))*lambda_C*pred_C*X_C[,1]*exp(alpha*wk))
-  # #derivada de beta_C_2
-  # deriv1[10,] <- colSums(Delta_c*(X_C[,2]) - (t^(alpha_C))*lambda_C*pred_C*X_C[,2]*exp(alpha*wk))
-  # #derivada de beta_C_3
-  # deriv1[11,] <- colSums(Delta_c*(X_C[,3]) - (t^(alpha_C))*lambda_C*pred_C*X_C[,3]*exp(alpha*wk))
-  # #derivada de beta_C_4
-  # deriv1[12,] <- colSums(Delta_c*(X_C[,4]) - (t^(alpha_C))*lambda_C*pred_C*X_C[,4]*exp(alpha*wk))
-
-  #derivada de alpha
   deriv1[4+p+q+1,] <- colSums(Delta_c*(wk) - (t^(alpha_C))*lambda_C*pred_C*exp(alpha*wk)*wk)
 
-  #derivada de sigma2
   deriv1[4+p+q+2,] <- colSums(-0.5*Sigma2^(-1) + 0.5*(Sigma2^(-2))*w_k_grupo^(2))
 
   aux <- deriv1[,1]%*%t(deriv1[,1])
 
- for( i in 2:ncol(wk)){
-   aux <- aux + deriv1[,i]%*%t(deriv1[,i])
- }
+  for( i in 2:ncol(wk)){
+    aux <- aux + deriv1[,i]%*%t(deriv1[,i])
+  }
 
   return(aux/ncol(wk))
 }
 
-
-###---------------------------------------------------------------------------------------------------------------------------
-#funcoes para calcular o vetor com as derivadas de segunda ordem
-
+###----------------------------------------------------------------------
+# Funcoes para calcular o vetor com as derivadas de segunda ordem
+###----------------------------------------------------------------------
 
 Esp_DerivParciais <-  function(t,delta_T, delta_C, X_T, X_C, beta_T, beta_C, alpha,Sigma2=sigma2, alpha_T, alpha_C, lambda_T, lambda_C,w_k_grupo, ident){
 
   num_param <- length(beta_T)+2+length(beta_C)+2+length(alpha)+length(Sigma2)
-  deriv2 <- matrix(0,num_param,num_param)  #vetor que com as derivadas de primeira ordem,
-  wk = w_k_grupo[ident,]   #w_k_grupo= w_chapeu_grupo[,50]
-
+  deriv2 <- matrix(0,num_param,num_param)  #vetor que com as derivadas de segunda ordem,
+  wk = w_k_grupo[ident,]
+  p <- ncol(X_T)
+  q <- ncol(X_C)
   pred_T <- as.vector(exp(X_T%*%beta_T))
   pred_C <- as.vector(exp(X_C%*%beta_C))
   Delta_t <- delta_T%*%t(rep(1,ncol(wk)))
   Delta_c <- delta_C%*%t(rep(1,ncol(wk)))
-  p <- ncol(X_T)
-  q <- ncol(X_C)
 
-  #derivada de alpha.t da derivada de alpha.t
   deriv2[1,1] <- mean(colSums(Delta_t*(-alpha_T^(-2)) - (t^(alpha_T))*(log(t)^(2))*lambda_T*pred_T*exp(wk)))
 
-  #derivada de lambda.t da derivada de alpha.t
   deriv2[1,2] <- mean(colSums(- (t^(alpha_T))*(log(t))*pred_T*exp(wk)))
   deriv2[2,1] <- deriv2[1,2]
 
-  #derivada do vetor beta_T_1 da derivada de alpha.t
   for (i in 1:p){
     deriv2[1,2+i] <- mean(colSums(- (t^(alpha_T))*(log(t))*lambda_T*pred_T*X_T[,i]*exp(wk)))
     deriv2[2+i,1] <- deriv2[1,2+i]
   }
-  # #derivada de beta_T_1 da derivada de alpha.t
-  # deriv2[1,3] <- mean(colSums(- (t^(alpha_T))*(log(t))*lambda_T*pred_T*X_T[,1]*exp(wk)))
-  # deriv2[3,1] <- deriv2[1,3]
-  #
-  # #derivada de beta_T_2 da derivada de alpha.t
-  # deriv2[1,4] <- mean(colSums(- (t^(alpha_T))*(log(t))*lambda_T*pred_T*X_T[,2]*exp(wk)))
-  # deriv2[4,1] <- deriv2[1,4]
-  #
-  # #derivada de beta_T_3 da derivada de alpha.t
-  # deriv2[1,5] <- mean(colSums(- (t^(alpha_T))*(log(t))*lambda_T*pred_T*X_T[,3]*exp(wk)))
-  # deriv2[5,1] <- deriv2[1,5]
-  #
-  # #derivada de beta_T_4 da derivada de alpha.t
-  # deriv2[1,6] <- mean(colSums(- (t^(alpha_T))*(log(t))*lambda_T*pred_T*X_T[,4]*exp(wk)))
-  # deriv2[6,1] <- deriv2[1,6]
-  #
 
-  #derivada de lambda.t da derivada de lambda.t
   deriv2[2,2] <- mean(colSums( Delta_t*(-lambda_T^(-2))))
 
-  #derivada do vetor beta_T_1 da derivada de lambda.t
   for (i in 1:p){
-    deriv2[2,2+i] <- mean(colSums( - (t^(alpha_T))*pred_T*X_T[,1]*exp(wk)))
+    deriv2[2,2+i] <- mean(colSums( - (t^(alpha_T))*pred_T*X_T[,i]*exp(wk)))
     deriv2[2+i,2] <- deriv2[2,2+i]
   }
-  # #derivada de beta_T_1 da derivada de lambda.t
-  # deriv2[2,3] <- mean(colSums( - (t^(alpha_T))*pred_T*X_T[,1]*exp(wk)))
-  # deriv2[3,2] <- deriv2[2,3]
-  #
-  # #derivada de beta_T_2 da derivada de lambda.t
-  # deriv2[2,4] <- mean(colSums( - (t^(alpha_T))*pred_T*X_T[,2]*exp(wk)))
-  # deriv2[4,2] <- deriv2[2,4]
-  #
-  # #derivada de beta_T_3 da derivada de lambda.t
-  # deriv2[2,5] <- mean(colSums( - (t^(alpha_T))*pred_T*X_T[,3]*exp(wk)))
-  # deriv2[5,2] <- deriv2[2,5]
-  #
-  # #derivada de beta_T_4 da derivada de lambda.t
-  # deriv2[2,6] <- mean(colSums( - (t^(alpha_T))*pred_T*X_T[,4]*exp(wk)))
-  # deriv2[6,2] <- deriv2[2,6]
 
-
-  #derivada do vetor beta_T da derivada do vetor beta_T
   for (i in 1:p){
     deriv2[2+i,2+i] <- mean(colSums( - ((t^(alpha_T))*lambda_T*pred_T*(X_T[,i]^(2))*exp(wk))))
   }
-  #derivada de beta_T_1 da derivada de beta_T_1
-  # deriv2[3,3] <- mean(colSums( - ((t^(alpha_T))*lambda_T*pred_T*(X_T[,1]^(2))*exp(wk))))
-  # #derivada de beta_T_2 da derivada de beta_T_2
-  # deriv2[4,4] <- mean(colSums(- ( (t^(alpha_T))*lambda_T*pred_T*(X_T[,2]^(2))*exp(wk))))
-  # #derivada de beta_T_3 da derivada de beta_T_3
-  # deriv2[5,5] <- mean(colSums(- ( (t^(alpha_T))*lambda_T*pred_T*(X_T[,3]^(2))*exp(wk))))
-  # #derivada de beta_T_4 da derivada de beta_T_4
-  # deriv2[6,6] <- mean(colSums(- ( (t^(alpha_T))*lambda_T*pred_T*(X_T[,4]^(2))*exp(wk))))
 
-  #derivada de beta_T_2 da derivada de beta_T_1
   for (j in 1:(p-1)){
     for (i in 1:(p-1)){
+      if (ncol(t(t(X_T))) == 1){
+        next
+      }
       deriv2[2+j,3+i] <- mean(colSums(- (t^(alpha_T))*lambda_T*pred_T*X_T[,1+i]*X_T[,j]*exp(wk)))
       deriv2[3+i,2+j] <- deriv2[2+j,3+i]
     }
   }
 
-  # #derivada de beta_T_2 da derivada de beta_T_1
-  # deriv2[3,4] <- mean(colSums(- (t^(alpha_T))*lambda_T*pred_T*X_T[,2]*X_T[,1]*exp(wk)))
-  # deriv2[4,3] <- deriv2[3,4]
-  # #derivada de beta_T_3 da derivada de beta_T_1
-  # deriv2[3,5] <- mean(colSums(- (t^(alpha_T))*lambda_T*pred_T*X_T[,3]*X_T[,1]*exp(wk)))
-  # deriv2[5,3] <- deriv2[3,5]
-  # #derivada de beta_T_4 da derivada de beta_T_1
-  # deriv2[3,6] <- mean(colSums(- (t^(alpha_T))*lambda_T*pred_T*X_T[,4]*X_T[,1]*exp(wk)))
-  # deriv2[6,3] <- deriv2[3,6]
-  #
-  # #derivada de beta_T_3 da derivada de beta_T_2
-  # deriv2[4,5] <- mean(colSums(- (t^(alpha_T))*lambda_T*pred_T*X_T[,3]*X_T[,2]*exp(wk)))
-  # deriv2[5,4] <- deriv2[4,5]
-  #
-  # #derivada de beta_T_4 da derivada de beta_T_2
-  # deriv2[4,6] <- mean(colSums(- (t^(alpha_T))*lambda_T*pred_T*X_T[,4]*X_T[,2]*exp(wk)))
-  # deriv2[6,4] <- deriv2[4,6]
-  #
-  # #derivada de beta_T_4 da derivada de beta_T_3
-  # deriv2[5,6] <- mean(colSums(- (t^(alpha_T))*lambda_T*pred_T*X_T[,4]*X_T[,3]*exp(wk)))
-  # deriv2[6,5] <- deriv2[5,6]
-
-  #derivada de alpha.c da derivada de alpha.c
   deriv2[3+p,3+p] <- mean(colSums(Delta_c*(-alpha_C^(-2)) - (t^(alpha_C))*(log(t)^(2))*lambda_C*pred_C*exp(alpha*wk)))
 
-  #derivada de lambda.c da derivada de alpha.c
   deriv2[3+p,4+p] <- mean(colSums( - (t^(alpha_C))*log(t)*pred_C*exp(alpha*wk)))
   deriv2[4+p,3+p] <- deriv2[3+p,4+p]
 
-  #derivada do vetor beta_C da derivada de alpha.c
   for (i in 1:q){
     deriv2[3+p,(4+p+i)] <- mean(colSums( - (t^(alpha_C))*log(t)*lambda_C*pred_C*X_C[,i]*exp(alpha*wk)))
     deriv2[(4+p+i),3+p] <- deriv2[3+p,(4+p+i)]
   }
 
-  #  #derivada de beta_C_1 da derivada de alpha.c
-  # deriv2[7,9] <- mean(colSums( - (t^(alpha_C))*log(t)*lambda_C*pred_C*X_C[,1]*exp(alpha*wk)))
-  # deriv2[9,7] <- deriv2[7,9]
-  #
-  # #derivada de beta_C_2 da derivada de alpha.c
-  # deriv2[7,10] <- mean(colSums(- (t^(alpha_C))*log(t)*lambda_C*pred_C*X_C[,2]*exp(alpha*wk)))
-  # deriv2[10,7] <- deriv2[7,10]
-  #
-  # #derivada de beta_C_3 da derivada de alpha.c
-  # deriv2[7,11] <- mean(colSums(- (t^(alpha_C))*log(t)*lambda_C*pred_C*X_C[,3]*exp(alpha*wk)))
-  # deriv2[11,7] <- deriv2[7,11]
-  #
-  # #derivada de beta_C_4 da derivada de alpha.c
-  # deriv2[7,12] <- mean(colSums(- (t^(alpha_C))*log(t)*lambda_C*pred_C*X_C[,4]*exp(alpha*wk)))
-  # deriv2[12,7] <- deriv2[7,12]
-
-  #derivada de alpha da derivada de alpha.c
   deriv2[3+p,(4+p+q+1)] <- mean(colSums( - (t^(alpha_C))*log(t)*lambda_C*pred_C*exp(alpha*wk)*wk))
   deriv2[(4+p+q+1),3+p] <- deriv2[3+p,(4+p+q+1)]
 
-  #derivada de lambda.c da derivada de lambda.c
   deriv2[4+p,4+p] <- mean(colSums(Delta_c*(-lambda_C^(-2)) ))
 
-
-  #derivada de beta_C_1 da derivada de lambda.c
   for (i in 1:q){
     deriv2[4+p,(4+p+i)] <- mean(colSums( - (t^(alpha_C))*pred_C*X_C[,i]*exp(alpha*wk)))
     deriv2[(4+p+i),4+p] <- deriv2[4+p,(4+p+i)]
   }
 
-  # #derivada de beta_C_1 da derivada de lambda.c
-  # deriv2[8,9] <- mean(colSums( - (t^(alpha_C))*pred_C*X_C[,1]*exp(alpha*wk)))
-  # deriv2[9,8] <- deriv2[8,9]
-  #
-  # #derivada de beta_C_2 da derivada de lambda.c
-  # deriv2[8,10] <- mean(colSums( - (t^(alpha_C))*pred_C*X_C[,2]*exp(alpha*wk)))
-  # deriv2[10,8] <- deriv2[8,10]
-  #
-  # #derivada de beta_C_3 da derivada de lambda.c
-  # deriv2[8,11] <- mean(colSums( - (t^(alpha_C))*pred_C*X_C[,3]*exp(alpha*wk)))
-  # deriv2[11,8] <- deriv2[8,11]
-  #
-  # #derivada de beta_C_4 da derivada de lambda.c
-  # deriv2[8,12] <- mean(colSums( - (t^(alpha_C))*pred_C*X_C[,4]*exp(alpha*wk)))
-  # deriv2[12,8] <- deriv2[8,12]
-
-  #derivada de alpha da derivada de lambda.c
   deriv2[4+p,(4+p+q+1)] <- mean(colSums( - (t^(alpha_C))*pred_C*exp(alpha*wk)*wk))
   deriv2[(4+p+q+1),4+p] <- deriv2[4+p,(4+p+q+1)]
 
-  #derivada de beta_C_1 da derivada de beta_C_1
   for (i in 1:q){
     deriv2[4+p+i,4+p+i] <- mean(colSums(-((t^(alpha_C))*lambda_C*pred_C*(X_C[,i]^(2))*exp(alpha*wk))))
   }
 
-  #  #derivada de beta_C_1 da derivada de beta_C_1
-  # deriv2[9,9] <- mean(colSums(-((t^(alpha_C))*lambda_C*pred_C*(X_C[,1]^(2))*exp(alpha*wk))))
-  # #derivada de beta_C_2 da derivada de beta_C_2
-  # deriv2[10,10] <- mean(colSums( -((t^(alpha_C))*lambda_C*pred_C*(X_C[,2]^(2))*exp(alpha*wk))))
-  # #derivada de beta_C_3 da derivada de beta_C_3
-  # deriv2[11,11] <- mean(colSums( -((t^(alpha_C))*lambda_C*pred_C*(X_C[,3]^(2))*exp(alpha*wk))))
-  # #derivada de beta_C_4 da derivada de beta_C_4
-  # deriv2[12,12] <- mean(colSums( -((t^(alpha_C))*lambda_C*pred_C*(X_C[,4]^(2))*exp(alpha*wk))))
-
-
-  #derivada de beta_C_2 da derivada de beta_C_1
   for (j in 1:(q-1)){
     for (i in 1:(q-1)){
+      if (ncol(t(t(X_T))) == 1){
+        next
+      }
       deriv2[4+p+j,4+p+1+i] <- mean(colSums( - (t^(alpha_C))*lambda_C*pred_C*X_C[,1+i]*X_C[,j]*exp(alpha*wk)))
       deriv2[4+p+1+i,4+p+j] <- deriv2[4+p+j,4+p+1+i]
     }
   }
-  #
-  # #derivada de beta_C_2 da derivada de beta_C_1
-  # deriv2[9,10] <- mean(colSums( - (t^(alpha_C))*lambda_C*pred_C*X_C[,2]*X_C[,1]*exp(alpha*wk)))
-  # deriv2[10,9] <- deriv2[9,10]
-  #
-  # #derivada de beta_C_3 da derivada de beta_C_1
-  # deriv2[9,11] <- mean(colSums( - (t^(alpha_C))*lambda_C*pred_C*X_C[,3]*X_C[,1]*exp(alpha*wk)))
-  # deriv2[11,9] <- deriv2[9,11]
-  #
-  # #derivada de beta_C_4 da derivada de beta_C_1
-  # deriv2[9,12] <- mean(colSums( - (t^(alpha_C))*lambda_C*pred_C*X_C[,4]*X_C[,1]*exp(alpha*wk)))
-  # deriv2[12,9] <- deriv2[9,12]
 
-  #
-  # #derivada de beta_C_3 da derivada de beta_C_2
-  # deriv2[10,11] <- mean(colSums( - (t^(alpha_C))*lambda_C*pred_C*X_C[,2]*X_C[,3]*exp(alpha*wk)))
-  # deriv2[11,10] <- deriv2[10,11]
-  #
-  # #derivada de beta_C_4 da derivada de beta_C_2
-  # deriv2[10,12] <- mean(colSums( - (t^(alpha_C))*lambda_C*pred_C*X_C[,2]*X_C[,4]*exp(alpha*wk)))
-  # deriv2[12,10] <- deriv2[10,12]
-  #
-  # #derivada de beta_C_4 da derivada de beta_C_3
-  # deriv2[11,12] <- mean(colSums( - (t^(alpha_C))*lambda_C*pred_C*X_C[,3]*X_C[,4]*exp(alpha*wk)))
-  # deriv2[12,11] <- deriv2[11,12]
-
-
-  #derivada de alpha da derivada de beta_C_1
   for (i in 1:q){
-  deriv2[4+p+i,(4+p+q+1)] <- mean(colSums(- t^(alpha_C)*lambda_C*pred_C*X_C[,1]*exp(alpha*wk)*wk))
-  deriv2[(4+p+q+1),4+p+i] <- deriv2[4+p+i,(4+p+q+1)]
+    deriv2[4+p+i,(4+p+q+1)] <- mean(colSums(- t^(alpha_C)*lambda_C*pred_C*X_C[,i]*exp(alpha*wk)*wk))
+    deriv2[(4+p+q+1),4+p+i] <- deriv2[4+p+i,(4+p+q+1)]
   }
 
-  #
-  # #derivada de alpha da derivada de beta_C_1
-  # deriv2[9,13] <- mean(colSums(- t^(alpha_C)*lambda_C*pred_C*X_C[,1]*exp(alpha*wk)*wk))
-  # deriv2[13,9] <- deriv2[9,13]
-  #
-  # #derivada de alpha da derivada de beta_C_2
-  # deriv2[10,13] <- mean(colSums( - (t^(alpha_C))*lambda_C*pred_C*X_C[,2]*exp(alpha*wk)*wk))
-  # deriv2[13,10] <- deriv2[10,13]
-  #
-  # #derivada de alpha da derivada de beta_C_3
-  # deriv2[11,13] <- mean(colSums( - (t^(alpha_C))*lambda_C*pred_C*X_C[,3]*exp(alpha*wk)*wk))
-  # deriv2[13,11] <- deriv2[11,13]
-  #
-  # #derivada de alpha da derivada de beta_C_4
-  # deriv2[12,13] <- mean(colSums( - (t^(alpha_C))*lambda_C*pred_C*X_C[,4]*exp(alpha*wk)*wk))
-  # deriv2[13,12] <- deriv2[12,13]
-  #
-
-   #derivada de alpha da derivada de alpha
   deriv2[(4+p+q+1),(4+p+q+1)] <- mean(colSums( - (t^(alpha_C))*lambda_C*pred_C*exp(alpha*wk)*wk^(2)))
 
-  #derivada de sigma2 da derivada de sigma2
   deriv2[(4+p+q+2),(4+p+q+2)] <- mean(colSums( 0.5*Sigma2^(-2) - (Sigma2^(-3))*w_k_grupo^(2)))
 
   return((as.matrix(deriv2)))
 }
 
-###--------------------------------------------------------------------------------------------------
 ###---------------------------------------------------------------------------------------------------
-# funcao para ajustar o modelo completo
+# Funcao para ajustar o modelo completo
 ###---------------------------------------------------------------------------------------------------
 
-model_Weibull_indep <-  function(time, delta_t, delta_c, X_T, X_C, ident){
+model_Weibull_dep <-  function(time, delta_t, delta_c, X_T, X_C, ident){
+
+  ## Erros mais comuns
+  if(any(time < 0 | time == 0)) stop('time must be greater than 0')
 
   ###----------------------------------------------------------------------------------------------------
   # chute inicial para os betas_T, alpha_T, lambda_Te sigma2
@@ -541,8 +475,8 @@ model_Weibull_indep <-  function(time, delta_t, delta_c, X_T, X_C, ident){
 
 
   Esp_deriv_ordem1 <- Esp_DerivPrimOrdem(t=time,delta_T=delta_t, delta_C=delta_c,X_T=X_T, X_C=X_C,beta_T=beta_T, beta_C=beta_C,
-                                           alpha=alpha, Sigma2=sigma2, alpha_T=alpha_T, alpha_C=alpha_C,
-                                           lambda_T=lambda_T,lambda_C=lambda_C, w_k_grupo=w_chapeu_grupo, ident=ident)
+                                         alpha=alpha, Sigma2=sigma2, alpha_T=alpha_T, alpha_C=alpha_C,
+                                         lambda_T=lambda_T,lambda_C=lambda_C, w_k_grupo=w_chapeu_grupo, ident=ident)
 
 
   Esp_deriv_ordem2 <- Esp_DerivParciais(t=time,delta_T=delta_t, delta_C=delta_c, X_T=X_T, X_C=X_C,beta_T=beta_T, beta_C=beta_C,
@@ -557,3 +491,6 @@ model_Weibull_indep <-  function(time, delta_t, delta_c, X_T, X_C, ident){
   return(list(param_est, ErroPadrao))
 
 }
+
+
+
