@@ -1,11 +1,21 @@
-Package: EMMCWeibullV0
-Type: Package
-Title: What the Package Does (Title Case)
+Package: DepCens
+Title: Dependent Censoring Regression Models
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Description: Dependent censoring regression models for survival multivariate data. These models are based on extensions of the frailty models, capable to accommodating the dependence between failure and censoring times, with Weibull and piecewise exponential marginal distributions. Theoretical details regarding the models implemented in the package can be found in Schneider et al. (2019) <doi: 10.1002/bimj.201800391>.
+License: GPL (>= 2)
 Encoding: UTF-8
 LazyData: true
+RoxygenNote: 7.1.2
+Author: Silvana Schneider [aut, cre] (<https://orcid.org/0000-0002-1939-480X>)
+        Gabriel Grandemagne dos Santos [aut, cre]
+Maintainer: Silvana Schneider <schneider.sil@gmail.com>
+Imports: 
+    dlm,
+    Formula,
+    rootSolve,
+    survival
+Depends: 
+    R (>= 2.10)
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
