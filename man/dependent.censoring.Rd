@@ -17,7 +17,7 @@ dependent.censoring(
 \arguments{
 \item{formula}{an object of class "formula" (or one that can be coerced to that class): should be used as 'time ~ failure covariates | informative covariates'.}
 
-\item{data}{an optional data frame, list or environment (or object coercible by as.data.frame to a data frame) containing the variables in the model.}
+\item{data}{a data frame, list or environment (or object coercible by as.data.frame to a data frame) containing the variables in the model.}
 
 \item{delta_t}{Indicator function of the event of interest.}
 
@@ -27,13 +27,16 @@ dependent.censoring(
 
 \item{approach}{approach to be used to fit the model (must be either weibull or mep).}
 
-\item{Num_intervals}{Number of intervals of the time grid.}
+\item{Num_intervals}{Number of intervals of the time grid (mep only).}
 }
 \value{
 dependent.censoring returns an object of class "dcensoring" containing the fitted model.
 }
 \description{
 dependent.censoring is used to fit a survival analysis with dependent censoring.
+}
+\details{
+function estimates the parameters of the Piecewise exponential model (approach = "mep") or Weibull model (approach="weibull") with dependent censoring, considering the frailty model to capture the dependence between failure and dependent censoring times, as well as the clusters variability.
 }
 \examples{
 \dontrun{

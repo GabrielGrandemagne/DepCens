@@ -8,4 +8,6 @@
 #' @import survival
 #' @importFrom rootSolve multiroot
 #' @importFrom dlm arms
+#' @importFrom matrixStats colProds
+#' @importFrom stats pnorm
 NULL

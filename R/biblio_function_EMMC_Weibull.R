@@ -393,13 +393,27 @@ model_Weibull_dep <-  function(formula, data, delta_t, delta_c, ident){
 
   InfFisher <- (-Esp_deriv_ordem2) - Esp_deriv_ordem1
   Var <- solve(InfFisher)
-
   ErroPadrao <- sqrt(diag(Var))
+  if (any(is.na(ErroPadrao))) warning("The algorithm did not converge. It might converge if you run the function again.", call. = FALSE)
+
+  p_value_alpha <- 2*stats::pnorm(-abs(param_est[(5+p+q)]/ErroPadrao[(5+p+q)]))
+  p_value_t <- vector()
+  for (i in 1:p){
+    p_value_t[i] <- 2*stats::pnorm(-abs((param_est[c(2+i)])/(ErroPadrao[c(2+i)])))
+  }
+  p_value_c <- vector()
+  for (j in 1:q){
+    p_value_c[j] <- 2*stats::pnorm(-abs((param_est[c(4+p+j)])/(ErroPadrao[c(4+p+j)])))
+  }
+
+  criterios <- crit_weibull(X_T,X_C,bi,n,alpha_T,lambda_T,beta_T,alpha_C,lambda_C,beta_C,alpha,delta_t,delta_c,time,m,ident)
 
   # Ajustando a classe/lista
-  fit <- c((out[s,]+out[s-1,]+out[s-2,])/3)
+  fit <- param_est
   fit <- list(fit=fit)
   fit$stde <- ErroPadrao
+  fit$crit <- criterios
+  fit$pvalue <- c(p_value_alpha, p_value_t, p_value_c)
   fit$n <- n
   fit$p <- p
   fit$q <- q
@@ -874,11 +888,28 @@ model_MEP_dep <-  function(formula, data, delta_t, delta_c, ident, Num_intervals
   InfFisher <- (-Esp_deriv_ordem2) - Esp_deriv_ordem1
   Var <- solve(InfFisher)
   ErroPadrao <- sqrt(diag(Var))
+  if (any(is.na(ErroPadrao))) warning("The algorithm did not converge. It might converge if you run the function again.", call. = FALSE)
 
-  # Ajustando a classe/lista
-  fit <- c((out[s,]+out[s-1,]+out[s-2,])/3)
+  # p-value
+  p_value_alpha <- 2*stats::pnorm(-abs(param_est[(p+bmax+q+1)]/ErroPadrao[(p+bmax+q+1)]))
+  p_value_t <- vector()
+  for (i in 1:p){
+    p_value_t[i] <- 2*stats::pnorm(-abs((param_est[c(i)])/(ErroPadrao[c(i)])))
+  }
+  p_value_c <- vector()
+  for (j in 1:q){
+    p_value_c[j] <- 2*stats::pnorm(-abs((param_est[c(p+bmax+j)])/(ErroPadrao[c(p+bmax+j)])))
+  }
+
+  # information criteria
+  criterios <- crit_mep(X_T,X_C,bi,n,beta_T,lambda_T_j,beta_C,alpha,lambda_C_j,delta_t,delta_c,risco_a_T,risco_a_C,id_T,id_C,m,ident)
+
+  # creating the list/object
+  fit <- param_est
   fit <- list(fit=fit)
   fit$stde <- ErroPadrao
+  fit$crit <- criterios
+  fit$pvalue <- c(p_value_alpha, p_value_t, p_value_c)
   fit$n <- n
   fit$p <- p
   fit$q <- q
@@ -890,4 +921,80 @@ model_MEP_dep <-  function(formula, data, delta_t, delta_c, ident, Num_intervals
   fit$bmax <- bmax
   class(fit) <- "dcensoring"
   return(fit)
+}
+
+
+crit_weibull <- function(X_T,X_C,bi,n,alpha_T,lambda_T,beta_T,alpha_C,lambda_C,beta_C,alpha,delta_t,delta_c,time,m,ident) {
+  w <- bi                                                                       # pega a matriz de fragilidades salva na ultima itera??o
+  L <- ncol(w)
+  num_param <- length(c(alpha_T,lambda_T,beta_T,alpha_C,lambda_C,beta_C,alpha)) # numero de parametros, parametros salvos em fit (fit <- c((out[s,]+out[s-1,]+out[s-2,])/3))
+  log_vero <- matrix(NA,n,L)                                                    #log-verossimilhan?a, L numero de replicas monte carlo de w
+
+  for ( l in 1:L){
+    log_vero[,l] <-  delta_t*(log(alpha_T) + (alpha_T-1)*log(time) + log(lambda_T) + X_T%*%beta_T + w[,l]) - (time^alpha_T)*lambda_T*exp(X_T%*%beta_T + w[,l])
+    + delta_c*(log(alpha_C) + (alpha_C-1)*log(time) + log(lambda_C) + X_C%*%beta_C + alpha*w[,l]) - (time^alpha_C)*lambda_C*exp(X_C%*%beta_C + alpha*w[,l])
+  }
+
+  vero <- exp(log_vero)
+  vero_grupo <- matrix(NA,m,L)  #m eh o numero de grupos/cluster
+
+  for (i in 1:m){
+    vero_grupo[i,] <- matrixStats::colProds(vero, rows = which(ident==i))  # verossimilhan?a para cada grupo
+  }
+
+  log_lik <- sum(log(rowSums(vero_grupo)/L))
+
+  AIC <- 2*(-log_lik + num_param)
+
+  BIC <- 2*(-log_lik + 0.5*log(n)*num_param)
+
+  HQ <- 2*(-log_lik + log(log(n))*num_param)
+
+  return(cbind(AIC,BIC,HQ))
+}
+
+
+crit_mep <- function(X_T,X_C,bi,n,beta_T,lambda_T_j,beta_C,alpha,lambda_C_j,delta_t,delta_c,risco_a_T,risco_a_C,id_T,id_C,m,ident) {
+w <- bi                                                           # pega a matriz de fragilidades salva na ultima itera??o
+L <- ncol(w)
+num_param <- length(c(beta_T,lambda_T_j,beta_C,alpha,lambda_C_j)) # numero de parametros, parametros salvos em fit (fit <- c((out[s,]+out[s-1,]+out[s-2,])/3))
+log_vero <- matrix(NA,n,L)                                        # log-verossimilhan?a, L numero de replicas monte carlo de w
+
+
+for (l in 1:L){
+    if (ncol(t(t(X_T))) == 1 && ncol(t(t(X_C))) == 1){
+      log_vero[,l] <-  delta_t*(t(t(log(lambda_T_j[id_T]))) + X_T*beta_T + w[,l]) - risco_a_T*exp(X_T*beta_T + w[,l])
+      + delta_c*(t(t(log(lambda_C_j[id_C]))) + X_C*beta_C + alpha*w[,l]) - risco_a_C*exp(X_C*beta_C + alpha*w[,l])
+    }
+
+    if (ncol(t(t(X_T))) == 1 && ncol(t(t(X_C))) != 1){
+      log_vero[,l] <-  delta_t*(t(t(log(lambda_T_j[id_T]))) + X_T*beta_T + w[,l]) - risco_a_T*exp(X_T*beta_T + w[,l])
+      + delta_c*(t(t(log(lambda_C_j[id_C]))) + X_C%*%beta_C + alpha*w[,l]) - risco_a_C*exp(X_C%*%beta_C + alpha*w[,l])
+    }
+
+    if (ncol(t(t(X_T))) != 1 && ncol(t(t(X_C))) == 1){
+      log_vero[,l] <-  delta_t*(t(t(log(lambda_T_j[id_T]))) + X_T%*%beta_T + w[,l]) - risco_a_T*exp(X_T%*%beta_T + w[,l])
+      + delta_c*(t(t(log(lambda_C_j[id_C]))) + X_C*beta_C + alpha*w[,l]) - risco_a_C*exp(X_C*beta_C + alpha*w[,l])
+
+    }
+    if (ncol(t(t(X_T))) != 1 && ncol(t(t(X_C))) != 1){
+      log_vero[,l] <-  delta_t*(t(t(log(lambda_T_j[id_T]))) + X_T%*%beta_T + w[,l]) - risco_a_T*exp(X_T%*%beta_T + w[,l])
+      + delta_c*(t(t(log(lambda_C_j[id_C]))) + X_C%*%beta_C + alpha*w[,l]) - risco_a_C*exp(X_C%*%beta_C + alpha*w[,l])
+    }
+  }
+
+  vero <- exp(log_vero)
+  vero_grupo <- matrix(NA,m,L)  #m eh o numero de grupos/cluster
+
+  for (i in 1:m){
+    vero_grupo[i,] <- matrixStats::colProds(vero, rows = which(ident==i))  # verossimilhan?a para cada grupo
+  }
+
+  log_lik <- sum(log(rowSums(vero_grupo)/L))
+
+  AIC <- 2*(-log_lik + num_param)
+  BIC <- 2*(-log_lik + 0.5*log(n)*num_param)
+  HQ <- 2*(-log_lik + log(log(n))*num_param)
+
+  return(cbind(AIC,BIC,HQ))
 }
