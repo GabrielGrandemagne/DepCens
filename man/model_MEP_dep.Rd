@@ -27,6 +27,27 @@ model_MEP_dep(formula, data, delta_t, delta_c, ident, Num_intervals)
 }
 \value{
 model_MEP_dep returns an object of class "dcensoring" containing the fitted model.
+An object of class "dcensoring" is a list containing at least the following components:
+\itemize{
+  \item \code{param_est} a vector containing estimated parameters (dependency parameter, regression coefficients associated with failure times, regression coefficients associated with dependent censoring times, and time distribution parameters (Weibull or piecewise exponential)).
+  \item \code{stde} a vector containing the estimated standard errors of the estimated parameters vector.
+  \item \code{crit} a vector containing the information criteria, Akaike's information criterion (AIC), Baysian information criterion (BIC), Hannan–Quinn information criterion (HQ).
+  \item \code{pvalue} p-value of the estimated parameters vector.
+  \item \code{n} number of observations in the dataset.
+  \item \code{p} number of covariates associated with failure times (event of interest times).
+  \item \code{q} number of covariates associated with dependent censoring times (informative censoring times or competitive risk times).
+  \item \code{formula} formula used in the function call.
+  \item \code{terms} the terms object used, containing the covariates associated with the failure times and with the dependent censoring times.
+  \item \code{labels1} labels of the covariates associated with failure times.
+  \item \code{labels2} labels of the covariates associated with dependent censoring times.
+  \item \code{risco_a_T} a vector containing the cumulative baseline hazar of failure times.
+  \item \code{risco_a_C} a vector containing the cumulative baseline hazar of dependent censoring times.
+  \item \code{bi} a matrix containing the generated fragilities, one of the outputs of the function dependent.censoring, in which the individuals are in the rows and the Monte Carlo replicas in the columns.
+  \item \code{X_T} a matrix of variables associated with failure times.
+  \item \code{X_C} a matrix of variables associated with dependent censoring times.
+  \item \code{time} a vector of the observable times.
+  \item \code{bmax} value of the Num_intervals argument used.
+}
 }
 \description{
 model_MEP_dep function estimates the parameters of the Piecewise exponential model with dependent censoring, considering the frailty model to capture the dependence between failure and dependent censoring times, as well as the clusters variability

@@ -1,0 +1,44 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# DepCens
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+Dependent censoring regression models for survival multivariate data. These models are based on extensions of the frailty models, capable to accommodating the dependence between failure and censoring times, with Weibull and piecewise exponential marginal distributions.
+
+## Installation
+
+You can install the development version of DepCens from [GitHub](https://github.com/) with:
+
+```{r}
+#install.packages("devtools")
+#devtools::install_github("GabrielGrandemagne/DepCens")
+```
+
+## Example
+
+This is a basic example which shows you how to solve a common problem:
+
+```{r example}
+library(DepCens)
+#KidneyMimic is our simulated data frame
+delta_t <- ifelse(KidneyMimic$cens==1,1,0)
+delta_c <- ifelse(KidneyMimic$cens==2,1,0)
+fit <- dependent.censoring(formula = time ~ x1 + x2 | x3 + x1, data=KidneyMimic, delta_t=delta_t,
+                           delta_c=delta_c, ident=KidneyMimic$ident, approach = "weibull")
+summary_dc(fit)
+```

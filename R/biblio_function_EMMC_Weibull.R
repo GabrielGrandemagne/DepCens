@@ -99,6 +99,35 @@ modelo_C_Weibull <-  function(param_c, t, X_C, delta.c, bi){
   c(U_alphaC=U_alphaC,U_lambdaC=U_lambdaC,U_alpha=U_alpha,U_betas = U_betas)
 }
 
+crit_weibull <- function(X_T,X_C,bi,n,alpha_T,lambda_T,beta_T,alpha_C,lambda_C,beta_C,alpha,delta_t,delta_c,time,m,ident) {
+  w <- bi                                                                       # pega a matriz de fragilidades salva na ultima itera??o
+  L <- ncol(w)
+  num_param <- length(c(alpha_T,lambda_T,beta_T,alpha_C,lambda_C,beta_C,alpha)) # numero de parametros, parametros salvos em fit (fit <- c((out[s,]+out[s-1,]+out[s-2,])/3))
+  log_vero <- matrix(NA,n,L)                                                    #log-verossimilhan?a, L numero de replicas monte carlo de w
+
+  for ( l in 1:L){
+    log_vero[,l] <-  delta_t*(log(alpha_T) + (alpha_T-1)*log(time) + log(lambda_T) + X_T%*%beta_T + w[,l]) - (time^alpha_T)*lambda_T*exp(X_T%*%beta_T + w[,l])
+    + delta_c*(log(alpha_C) + (alpha_C-1)*log(time) + log(lambda_C) + X_C%*%beta_C + alpha*w[,l]) - (time^alpha_C)*lambda_C*exp(X_C%*%beta_C + alpha*w[,l])
+  }
+
+  vero <- exp(log_vero)
+  vero_grupo <- matrix(NA,m,L)  #m eh o numero de grupos/cluster
+
+  for (i in 1:m){
+    vero_grupo[i,] <- matrixStats::colProds(vero, rows = which(ident==i))  # verossimilhan?a para cada grupo
+  }
+
+  log_lik <- sum(log(rowSums(vero_grupo)/L))
+
+  AIC <- 2*(-log_lik + num_param)
+
+  BIC <- 2*(-log_lik + 0.5*log(n)*num_param)
+
+  HQ <- 2*(-log_lik + log(log(n))*num_param)
+
+  return(cbind(AIC,BIC,HQ))
+}
+
 ###--------------------------------------------------------------------------------------------------------------------------------------------------------
 # Function to calculate the vector with the first order derivatives of the Weibull model
 ###--------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -246,7 +275,6 @@ Esp_DerivParc_Weibull <-  function(t,delta_T, delta_C, X_T, X_C, beta_T, beta_C,
 #---------------------------------------------
 #' model_Weibull_dep
 #' @aliases model_Weibull_dep
-#' @export
 #' @description model_Weibull_dep function estimates the parameters of the Weibull model with dependent censoring, considering the frailty model to capture the dependence between failure and dependent censoring times, as well as the clusters variability
 #' @param formula an object of class "formula" (or one that can be coerced to that class): should be used as 'time ~ failure covariates | informative covariates'.
 #' @param data an optional data frame, list or environment (or object coercible by as.data.frame to a data frame) containing the variables in the model.
@@ -254,7 +282,25 @@ Esp_DerivParc_Weibull <-  function(t,delta_T, delta_C, X_T, X_C, beta_T, beta_C,
 #' @param delta_c Indicator function of the dependent censoring.
 #' @param ident Cluster indicator variable.
 #' @return model_Weibull_dep returns an object of class "dcensoring" containing the fitted model.
-#'
+#' \itemize{
+#'   \item \code{param_est} a vector containing estimated parameters (dependency parameter, regression coefficients associated with failure times, regression coefficients associated with dependent censoring times, and time distribution parameters (Weibull or piecewise exponential)).
+#'   \item \code{stde} a vector containing the estimated standard errors of the estimated parameters vector.
+#'   \item \code{crit} a vector containing the information criteria, Akaike's information criterion (AIC), Baysian information criterion (BIC), Hannan–Quinn information criterion (HQ).
+#'   \item \code{pvalue} p-value of the estimated parameters vector.
+#'   \item \code{n} number of observations in the dataset.
+#'   \item \code{p} number of covariates associated with failure times (event of interest times).
+#'   \item \code{q} number of covariates associated with dependent censoring times (informative censoring times or competitive risk times).
+#'   \item \code{formula} formula used in the function call.
+#'   \item \code{terms} the terms object used, containing the covariates associated with the failure times and with the dependent censoring times.
+#'   \item \code{labels1} labels of the covariates associated with failure times.
+#'   \item \code{labels2} labels of the covariates associated with dependent censoring times.
+#'   \item \code{risco_a_T} a vector containing the cumulative baseline hazar of failure times.
+#'   \item \code{risco_a_C} a vector containing the cumulative baseline hazar of dependent censoring times.
+#'   \item \code{bi} a matrix containing the generated fragilities, one of the outputs of the function dependent.censoring, in which the individuals are in the rows and the Monte Carlo replicas in the columns.
+#'   \item \code{X_T} a matrix of variables associated with failure times.
+#'   \item \code{X_C} a matrix of variables associated with dependent censoring times.
+#'   \item \code{time} a vector of the observable times.
+#' }
 #' @examples
 #' \dontrun{
 #' model_Weibull_dep(formula = time ~ x1 | x3, data=KidneyMimic, delta_t=KidneyMimic$delta_t,
@@ -287,11 +333,11 @@ model_Weibull_dep <-  function(formula, data, delta_t, delta_c, ident){
 
   control = coxph.control()
   ajuste_coxph_T <- coxph(Surv(time, delta_t) ~  X_T, method="breslow")
-  risco_a_T <- basehaz(ajuste_coxph_T, centered=FALSE)$hazard  #cumulative hazard
+  #risco_a_T <- basehaz(ajuste_coxph_T, centered=FALSE)$hazard  #cumulative hazard
   beta_T <- ajuste_coxph_T$coef
 
   ajuste_coxph_C <- coxph(Surv(time, delta_c) ~  X_C, method="breslow")
-  risco_a_C <- basehaz(ajuste_coxph_C, centered=FALSE)$hazard  #cumulative hazard
+  #risco_a_C <- basehaz(ajuste_coxph_C, centered=FALSE)$hazard  #cumulative hazard
   beta_C <- ajuste_coxph_C$coef
 
   alpha <- 0
@@ -422,6 +468,12 @@ model_Weibull_dep <-  function(formula, data, delta_t, delta_c, ident){
   fit$terms <- stats::terms.formula(formula)
   fit$labels1 <- Zlabels
   fit$labels2 <- Xlabels
+  fit$risco_a_T <- risco_a_T
+  fit$risco_a_C <- risco_a_C
+  fit$bi <- bi
+  fit$X_T <- X_T
+  fit$X_C <- X_C
+  fit$time <- time
   class(fit) <- "dcensoring"
   return(fit)
 }
@@ -561,6 +613,51 @@ H0ti <- function(a_inf,t,deltaij,lambda,b,n){
   return(H0ti)
 }
 
+crit_mep <- function(X_T,X_C,bi,n,beta_T,lambda_T_j,beta_C,alpha,lambda_C_j,delta_t,delta_c,risco_a_T,risco_a_C,id_T,id_C,m,ident) {
+  w <- bi                                                           # pega a matriz de fragilidades salva na ultima itera??o
+  L <- ncol(w)
+  num_param <- length(c(beta_T,lambda_T_j,beta_C,alpha,lambda_C_j)) # numero de parametros, parametros salvos em fit (fit <- c((out[s,]+out[s-1,]+out[s-2,])/3))
+  log_vero <- matrix(NA,n,L)                                        # log-verossimilhan?a, L numero de replicas monte carlo de w
+
+
+  for (l in 1:L){
+    if (ncol(t(t(X_T))) == 1 && ncol(t(t(X_C))) == 1){
+      log_vero[,l] <-  delta_t*(t(t(log(lambda_T_j[id_T]))) + X_T*beta_T + w[,l]) - risco_a_T*exp(X_T*beta_T + w[,l])
+      + delta_c*(t(t(log(lambda_C_j[id_C]))) + X_C*beta_C + alpha*w[,l]) - risco_a_C*exp(X_C*beta_C + alpha*w[,l])
+    }
+
+    if (ncol(t(t(X_T))) == 1 && ncol(t(t(X_C))) != 1){
+      log_vero[,l] <-  delta_t*(t(t(log(lambda_T_j[id_T]))) + X_T*beta_T + w[,l]) - risco_a_T*exp(X_T*beta_T + w[,l])
+      + delta_c*(t(t(log(lambda_C_j[id_C]))) + X_C%*%beta_C + alpha*w[,l]) - risco_a_C*exp(X_C%*%beta_C + alpha*w[,l])
+    }
+
+    if (ncol(t(t(X_T))) != 1 && ncol(t(t(X_C))) == 1){
+      log_vero[,l] <-  delta_t*(t(t(log(lambda_T_j[id_T]))) + X_T%*%beta_T + w[,l]) - risco_a_T*exp(X_T%*%beta_T + w[,l])
+      + delta_c*(t(t(log(lambda_C_j[id_C]))) + X_C*beta_C + alpha*w[,l]) - risco_a_C*exp(X_C*beta_C + alpha*w[,l])
+
+    }
+    if (ncol(t(t(X_T))) != 1 && ncol(t(t(X_C))) != 1){
+      log_vero[,l] <-  delta_t*(t(t(log(lambda_T_j[id_T]))) + X_T%*%beta_T + w[,l]) - risco_a_T*exp(X_T%*%beta_T + w[,l])
+      + delta_c*(t(t(log(lambda_C_j[id_C]))) + X_C%*%beta_C + alpha*w[,l]) - risco_a_C*exp(X_C%*%beta_C + alpha*w[,l])
+    }
+  }
+
+  vero <- exp(log_vero)
+  vero_grupo <- matrix(NA,m,L)  #m eh o numero de grupos/cluster
+
+  for (i in 1:m){
+    vero_grupo[i,] <- matrixStats::colProds(vero, rows = which(ident==i))  # verossimilhan?a para cada grupo
+  }
+
+  log_lik <- sum(log(rowSums(vero_grupo)/L))
+
+  AIC <- 2*(-log_lik + num_param)
+  BIC <- 2*(-log_lik + 0.5*log(n)*num_param)
+  HQ <- 2*(-log_lik + log(log(n))*num_param)
+
+  return(cbind(AIC,BIC,HQ))
+}
+
 ###-------------------------------------------------------------------------------------------
 # calculo das derivas de primeira ordem
 
@@ -692,13 +789,11 @@ Esp_DerivParc_MEP <-  function( X_T, X_C,delta_T,delta_C, beta_T, beta_C, alpha,
   return((as.matrix(deriv2)))
 }
 
-
 ###---------------------------------------------------------------------------------------------------
 # Function to fit the complete MEP model
 ###---------------------------------------------------------------------------------------------------
 #' model_MEP_dep
 #' @aliases Piecewise exponential model for dependent censoring
-#' @export
 #' @description model_MEP_dep function estimates the parameters of the Piecewise exponential model with dependent censoring, considering the frailty model to capture the dependence between failure and dependent censoring times, as well as the clusters variability
 #' @param formula an object of class "formula" (or one that can be coerced to that class): should be used as 'time ~ failure covariates | informative covariates'.
 #' @param data an optional data frame, list or environment (or object coercible by as.data.frame to a data frame) containing the variables in the model.
@@ -707,7 +802,27 @@ Esp_DerivParc_MEP <-  function( X_T, X_C,delta_T,delta_C, beta_T, beta_C, alpha,
 #' @param ident Cluster indicator variable.
 #' @param Num_intervals Number of intervals of the time grid.
 #' @return model_MEP_dep returns an object of class "dcensoring" containing the fitted model.
-#'
+#' An object of class "dcensoring" is a list containing at least the following components:
+#' \itemize{
+#'   \item \code{param_est} a vector containing estimated parameters (dependency parameter, regression coefficients associated with failure times, regression coefficients associated with dependent censoring times, and time distribution parameters (Weibull or piecewise exponential)).
+#'   \item \code{stde} a vector containing the estimated standard errors of the estimated parameters vector.
+#'   \item \code{crit} a vector containing the information criteria, Akaike's information criterion (AIC), Baysian information criterion (BIC), Hannan–Quinn information criterion (HQ).
+#'   \item \code{pvalue} p-value of the estimated parameters vector.
+#'   \item \code{n} number of observations in the dataset.
+#'   \item \code{p} number of covariates associated with failure times (event of interest times).
+#'   \item \code{q} number of covariates associated with dependent censoring times (informative censoring times or competitive risk times).
+#'   \item \code{formula} formula used in the function call.
+#'   \item \code{terms} the terms object used, containing the covariates associated with the failure times and with the dependent censoring times.
+#'   \item \code{labels1} labels of the covariates associated with failure times.
+#'   \item \code{labels2} labels of the covariates associated with dependent censoring times.
+#'   \item \code{risco_a_T} a vector containing the cumulative baseline hazar of failure times.
+#'   \item \code{risco_a_C} a vector containing the cumulative baseline hazar of dependent censoring times.
+#'   \item \code{bi} a matrix containing the generated fragilities, one of the outputs of the function dependent.censoring, in which the individuals are in the rows and the Monte Carlo replicas in the columns.
+#'   \item \code{X_T} a matrix of variables associated with failure times.
+#'   \item \code{X_C} a matrix of variables associated with dependent censoring times.
+#'   \item \code{time} a vector of the observable times.
+#'   \item \code{bmax} value of the Num_intervals argument used.
+#' }
 #' @examples
 #' \dontrun{
 #' # MEP approach:
@@ -740,12 +855,12 @@ model_MEP_dep <-  function(formula, data, delta_t, delta_c, ident, Num_intervals
   # chute inicial para os betas_T,betas_C, betas_R, alpha2,alpha3 e sigma2
   control = coxph.control()
   ajuste_coxph_T <- coxph(Surv(time, delta_t) ~  X_T, method="breslow")
-  risco_a_T <- basehaz(ajuste_coxph_T, centered=FALSE)$hazard  #cumulative hazard
+  #risco_a_T <- basehaz(ajuste_coxph_T, centered=FALSE)$hazard  #cumulative hazard
   beta_T <- ajuste_coxph_T$coef
   # beta_T <- rep(0.1,p)
 
   ajuste_coxph_C <- coxph(Surv(time, delta_c) ~  X_C, method="breslow")
-  risco_a_C <- basehaz(ajuste_coxph_C, centered=FALSE)$hazard  #cumulative hazard
+  #risco_a_C <- basehaz(ajuste_coxph_C, centered=FALSE)$hazard  #cumulative hazard
   beta_C <- ajuste_coxph_C$coef
   # beta_C <- rep(0.1,q)
   ###----------------------------------------------------------------------------------------------------
@@ -919,82 +1034,12 @@ model_MEP_dep <-  function(formula, data, delta_t, delta_c, ident, Num_intervals
   fit$labels1 <- Zlabels
   fit$labels2 <- Xlabels
   fit$bmax <- bmax
+  fit$risco_a_T <- risco_a_T
+  fit$risco_a_C <- risco_a_C
+  fit$bi <- bi
+  fit$X_T <- X_T
+  fit$X_C <- X_C
+  fit$time <- time
   class(fit) <- "dcensoring"
   return(fit)
-}
-
-
-crit_weibull <- function(X_T,X_C,bi,n,alpha_T,lambda_T,beta_T,alpha_C,lambda_C,beta_C,alpha,delta_t,delta_c,time,m,ident) {
-  w <- bi                                                                       # pega a matriz de fragilidades salva na ultima itera??o
-  L <- ncol(w)
-  num_param <- length(c(alpha_T,lambda_T,beta_T,alpha_C,lambda_C,beta_C,alpha)) # numero de parametros, parametros salvos em fit (fit <- c((out[s,]+out[s-1,]+out[s-2,])/3))
-  log_vero <- matrix(NA,n,L)                                                    #log-verossimilhan?a, L numero de replicas monte carlo de w
-
-  for ( l in 1:L){
-    log_vero[,l] <-  delta_t*(log(alpha_T) + (alpha_T-1)*log(time) + log(lambda_T) + X_T%*%beta_T + w[,l]) - (time^alpha_T)*lambda_T*exp(X_T%*%beta_T + w[,l])
-    + delta_c*(log(alpha_C) + (alpha_C-1)*log(time) + log(lambda_C) + X_C%*%beta_C + alpha*w[,l]) - (time^alpha_C)*lambda_C*exp(X_C%*%beta_C + alpha*w[,l])
-  }
-
-  vero <- exp(log_vero)
-  vero_grupo <- matrix(NA,m,L)  #m eh o numero de grupos/cluster
-
-  for (i in 1:m){
-    vero_grupo[i,] <- matrixStats::colProds(vero, rows = which(ident==i))  # verossimilhan?a para cada grupo
-  }
-
-  log_lik <- sum(log(rowSums(vero_grupo)/L))
-
-  AIC <- 2*(-log_lik + num_param)
-
-  BIC <- 2*(-log_lik + 0.5*log(n)*num_param)
-
-  HQ <- 2*(-log_lik + log(log(n))*num_param)
-
-  return(cbind(AIC,BIC,HQ))
-}
-
-
-crit_mep <- function(X_T,X_C,bi,n,beta_T,lambda_T_j,beta_C,alpha,lambda_C_j,delta_t,delta_c,risco_a_T,risco_a_C,id_T,id_C,m,ident) {
-w <- bi                                                           # pega a matriz de fragilidades salva na ultima itera??o
-L <- ncol(w)
-num_param <- length(c(beta_T,lambda_T_j,beta_C,alpha,lambda_C_j)) # numero de parametros, parametros salvos em fit (fit <- c((out[s,]+out[s-1,]+out[s-2,])/3))
-log_vero <- matrix(NA,n,L)                                        # log-verossimilhan?a, L numero de replicas monte carlo de w
-
-
-for (l in 1:L){
-    if (ncol(t(t(X_T))) == 1 && ncol(t(t(X_C))) == 1){
-      log_vero[,l] <-  delta_t*(t(t(log(lambda_T_j[id_T]))) + X_T*beta_T + w[,l]) - risco_a_T*exp(X_T*beta_T + w[,l])
-      + delta_c*(t(t(log(lambda_C_j[id_C]))) + X_C*beta_C + alpha*w[,l]) - risco_a_C*exp(X_C*beta_C + alpha*w[,l])
-    }
-
-    if (ncol(t(t(X_T))) == 1 && ncol(t(t(X_C))) != 1){
-      log_vero[,l] <-  delta_t*(t(t(log(lambda_T_j[id_T]))) + X_T*beta_T + w[,l]) - risco_a_T*exp(X_T*beta_T + w[,l])
-      + delta_c*(t(t(log(lambda_C_j[id_C]))) + X_C%*%beta_C + alpha*w[,l]) - risco_a_C*exp(X_C%*%beta_C + alpha*w[,l])
-    }
-
-    if (ncol(t(t(X_T))) != 1 && ncol(t(t(X_C))) == 1){
-      log_vero[,l] <-  delta_t*(t(t(log(lambda_T_j[id_T]))) + X_T%*%beta_T + w[,l]) - risco_a_T*exp(X_T%*%beta_T + w[,l])
-      + delta_c*(t(t(log(lambda_C_j[id_C]))) + X_C*beta_C + alpha*w[,l]) - risco_a_C*exp(X_C*beta_C + alpha*w[,l])
-
-    }
-    if (ncol(t(t(X_T))) != 1 && ncol(t(t(X_C))) != 1){
-      log_vero[,l] <-  delta_t*(t(t(log(lambda_T_j[id_T]))) + X_T%*%beta_T + w[,l]) - risco_a_T*exp(X_T%*%beta_T + w[,l])
-      + delta_c*(t(t(log(lambda_C_j[id_C]))) + X_C%*%beta_C + alpha*w[,l]) - risco_a_C*exp(X_C%*%beta_C + alpha*w[,l])
-    }
-  }
-
-  vero <- exp(log_vero)
-  vero_grupo <- matrix(NA,m,L)  #m eh o numero de grupos/cluster
-
-  for (i in 1:m){
-    vero_grupo[i,] <- matrixStats::colProds(vero, rows = which(ident==i))  # verossimilhan?a para cada grupo
-  }
-
-  log_lik <- sum(log(rowSums(vero_grupo)/L))
-
-  AIC <- 2*(-log_lik + num_param)
-  BIC <- 2*(-log_lik + 0.5*log(n)*num_param)
-  HQ <- 2*(-log_lik + log(log(n))*num_param)
-
-  return(cbind(AIC,BIC,HQ))
 }
