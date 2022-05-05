@@ -9,5 +9,5 @@
 #' @importFrom rootSolve multiroot
 #' @importFrom dlm arms
 #' @importFrom matrixStats colProds
-#' @importFrom stats pnorm
+#' @importFrom stats pnorm lowess
 NULL
