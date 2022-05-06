@@ -1,5 +1,17 @@
 ## R CMD check results
+There were no ERRORs or WARNINGs. 
 
-Duration: 1m 9.5s
+There was 1 NOTE:
 
-0 errors √ | 0 warnings √ | 0 notes √
+* checking CRAN incoming feasibility ... NOTE
+Maintainer: 'Silvana Schneider <schneider.sil@gmail.com>'
+
+New submission
+
+Found the following (possibly) invalid DOIs:
+  DOI: 10.1002/bimj.201800391
+    From: DESCRIPTION
+    Status: Service Unavailable
+    Message: 503
+
+Service is unavailable at the moment. DOI: 10.1002/bimj.201800391 checks out.
