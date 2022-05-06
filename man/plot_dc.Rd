@@ -15,15 +15,15 @@ plot_dc(object, scenario = c("t", "c", "both"))
 a survival function graph of the fitted model.
 }
 \description{
-this graph helps to visualize the survival function.
+This graph helps to visualize the survival function.
 }
 \details{
-sometimes the smoothness treatment used (lowess function) results in a non-monotonous survival function.
+In order to smooth the line presented in the graph, we used the 'lowess' function. So, it can result in a non-monotonous survival function.
 }
 \examples{
 \dontrun{
 fit <- dependent.censoring(formula = time ~ x1 | x3, data=KidneyMimic, delta_t=KidneyMimic$delta_t,
-                          delta_c=KidneyMimic$delta_c, ident=KidneyMimic$ident, approach = "mep")
+                          delta_c=KidneyMimic$delta_c, ident=KidneyMimic$ident, dist = "mep")
 plot.dc(fit, scenario = "both")
 }
 

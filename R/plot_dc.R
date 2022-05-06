@@ -2,16 +2,16 @@
 #'
 #' @aliases plot_dc
 #' @export
-#' @description this graph helps to visualize the survival function.
+#' @description This graph helps to visualize the survival function.
 #' @param object an object of the class "dcensoring".
 #' @param scenario which defines the scenario in the graph (t: failure times, c: dependent censoring times, or both).
-#' @details sometimes the smoothness treatment used (lowess function) results in a non-monotonous survival function.
+#' @details In order to smooth the line presented in the graph, we used the 'lowess' function. So, it can result in a non-monotonous survival function.
 #' @return a survival function graph of the fitted model.
 #'
 #' @examples
 #' \dontrun{
 #' fit <- dependent.censoring(formula = time ~ x1 | x3, data=KidneyMimic, delta_t=KidneyMimic$delta_t,
-#'                           delta_c=KidneyMimic$delta_c, ident=KidneyMimic$ident, approach = "mep")
+#'                           delta_c=KidneyMimic$delta_c, ident=KidneyMimic$ident, dist = "mep")
 #' plot.dc(fit, scenario = "both")
 #'}
 #'

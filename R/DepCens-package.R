@@ -10,4 +10,11 @@
 #' @importFrom dlm arms
 #' @importFrom matrixStats colProds
 #' @importFrom stats pnorm lowess
+#' @importFrom graphics lines
+#'
+#' @references
+#' Schneider, S.; Demarqui, F. N.; Colosimo, E. A.; Mayrink, V. D. (2020). An approach to model clustered survival data with dependent censoring. Biometrical Journal, v.62, n.1, 157--174.
+#'
+#' Louis, T. A. (1982). Finding the observed information matrix when using the EM algorithm. Journal of the Royal Statistical Society, B44, 226–233.
+#'
 NULL

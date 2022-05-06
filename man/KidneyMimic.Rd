@@ -9,7 +9,7 @@ A data frame with 200 rows and 9 variables:
 \itemize{
   \item ident: Variable that indicates the clinic (cluster) of the patient.
   \item time: time observed until the occurrence of the outcome.
-  \item event: variable that indicates the occurrence of the event of interest, event=1 if variable that indicates the occurrence of the event of interest.
+  \item event: variable that indicates the occurrence of the event of interest, event=1 if the event of interest occurs.
   \item x1: covariate 1, generated from a Uniform Distribution. Can denote, for example, a exam result.
   \item x2: covariate 2, generated from a Binomial Distribution. Can denote, for example, an treatment
   \item x3: covariate 3, generated from a Normal Distribution. can denote, for example, an standardized age.

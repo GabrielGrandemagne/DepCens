@@ -31,23 +31,39 @@ library(DepCens)
 delta_t <- ifelse(KidneyMimic$cens==1,1,0)
 delta_c <- ifelse(KidneyMimic$cens==2,1,0)
 fit <- dependent.censoring(formula = time ~ x1 + x2 | x3 + x1, data=KidneyMimic, delta_t=delta_t,
-                           delta_c=delta_c, ident=KidneyMimic$ident, approach = "weibull")
+                           delta_c=delta_c, ident=KidneyMimic$ident, dist = "weibull")
 summary_dc(fit)
-#> WEIBULL APPROACH:
 #> 
-#> Name  Estimate    Std. Error  CI INF      CI SUP  
-#> Alpha    1.337653    0.3831564   0.5866666   2.088640    
-#> Sigma    0.6760496   0.2672546   0.1522306   1.199869    
+#> Weibull approach
+#> 
+#> Name  Estimate    Std. Error  CI INF      CI SUP      p-value     
+#> Alpha    1.388009    0.3922203   0.6192571   2.156761    0.0004019   
+#> Sigma    0.6447018   0.2315937   0.1907782   1.098625    
 #> 
 #> Coefficients T:
 #> 
-#> Name  Estimate    Std. Error  CI INF      CI SUP  
-#> x1   0.08186471  0.02224396  0.03826655  0.1254629   
-#> x2   -1.412163   0.2378199   -1.878290   -0.9460356  
+#> Name  Estimate    Std. Error  CI INF      CI SUP      p-value     
+#> x1   0.08098522  0.02080334  0.04021067  0.1217598   9.905e-05   
+#> x2   -1.406800   0.2398661   -1.876938   -0.9366627  4.493e-09   
 #> 
 #> Coefficients C:
 #> 
-#> Name  Estimate    Std. Error  CI INF      CI SUP  
-#> x3   0.2223204   0.1898567   -0.1497987  0.5944395   
-#> x1   0.1932663   0.04070445  0.1134856   0.273047    
+#> Name  Estimate    Std. Error  CI INF      CI SUP      p-value     
+#> x3   0.230895    0.1888372   -0.1392259  0.601016    0.2214  
+#> x1   0.1945837   0.03807359  0.1199595   0.2692079   3.209e-07   
+#> 
+#> ----------------------------------------------------------------------------------
+#> 
+#> Information criteria:
+#> 
+#> AIC   BIC      HQ    
+#> 405.4663 435.1512 417.4793
 ```
+
+You can also plot the survival function
+
+``` r
+plot_dc(fit, scenario = "t")
+```
+
+<img src="man/figures/README-plot_dc-1.png" width="100%" />

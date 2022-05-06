@@ -275,9 +275,9 @@ Esp_DerivParc_Weibull <-  function(t,delta_T, delta_C, X_T, X_C, beta_T, beta_C,
 #---------------------------------------------
 #' model_Weibull_dep
 #' @aliases model_Weibull_dep
-#' @description model_Weibull_dep function estimates the parameters of the Weibull model with dependent censoring, considering the frailty model to capture the dependence between failure and dependent censoring times, as well as the clusters variability
-#' @param formula an object of class "formula" (or one that can be coerced to that class): should be used as 'time ~ failure covariates | informative covariates'.
-#' @param data an optional data frame, list or environment (or object coercible by as.data.frame to a data frame) containing the variables in the model.
+#' @description This function estimates the parameters of the Weibull model with dependent censoring, considering the frailty model to estimate the clusters variability and a parameter that capture the dependence between failure and dependent censoring times.
+#' @param formula an object of class "formula": should be used as 'time ~ failure covariates | informative covariates'.
+#' @param data an optional data frame, list or environment containing the variables.
 #' @param delta_t Indicator function of the event of interest.
 #' @param delta_c Indicator function of the dependent censoring.
 #' @param ident Cluster indicator variable.
@@ -285,7 +285,7 @@ Esp_DerivParc_Weibull <-  function(t,delta_T, delta_C, X_T, X_C, beta_T, beta_C,
 #' \itemize{
 #'   \item \code{param_est} a vector containing estimated parameters (dependency parameter, regression coefficients associated with failure times, regression coefficients associated with dependent censoring times, and time distribution parameters (Weibull or piecewise exponential)).
 #'   \item \code{stde} a vector containing the estimated standard errors of the estimated parameters vector.
-#'   \item \code{crit} a vector containing the information criteria, Akaike's information criterion (AIC), Baysian information criterion (BIC), Hannan–Quinn information criterion (HQ).
+#'   \item \code{crit} a vector containing the information criteria, Akaike's information criterion (AIC), Baysian information criterion (BIC), Hannan–Quinn information criterion (HQ), calculated according to Louis, T. A. (1982).
 #'   \item \code{pvalue} p-value of the estimated parameters vector.
 #'   \item \code{n} number of observations in the dataset.
 #'   \item \code{p} number of covariates associated with failure times (event of interest times).
@@ -794,19 +794,19 @@ Esp_DerivParc_MEP <-  function( X_T, X_C,delta_T,delta_C, beta_T, beta_C, alpha,
 ###---------------------------------------------------------------------------------------------------
 #' model_MEP_dep
 #' @aliases Piecewise exponential model for dependent censoring
-#' @description model_MEP_dep function estimates the parameters of the Piecewise exponential model with dependent censoring, considering the frailty model to capture the dependence between failure and dependent censoring times, as well as the clusters variability
-#' @param formula an object of class "formula" (or one that can be coerced to that class): should be used as 'time ~ failure covariates | informative covariates'.
-#' @param data an optional data frame, list or environment (or object coercible by as.data.frame to a data frame) containing the variables in the model.
+#' @description This function estimates the parameters of the Piecewise exponential model with dependent censoring, considering the frailty model to estimate the clusters variability and a parameter that capture the dependence between failure and dependent censoring times.
+#' @param formula an object of class "formula": should be used as 'time ~ failure covariates | informative covariates'.
+#' @param data an optional data frame, list or environment  containing the variables.
 #' @param delta_t Indicator function of the event of interest.
 #' @param delta_c Indicator function of the dependent censoring.
-#' @param ident Cluster indicator variable.
+#' @param ident Cluster variable.
 #' @param Num_intervals Number of intervals of the time grid.
 #' @return model_MEP_dep returns an object of class "dcensoring" containing the fitted model.
 #' An object of class "dcensoring" is a list containing at least the following components:
 #' \itemize{
 #'   \item \code{param_est} a vector containing estimated parameters (dependency parameter, regression coefficients associated with failure times, regression coefficients associated with dependent censoring times, and time distribution parameters (Weibull or piecewise exponential)).
 #'   \item \code{stde} a vector containing the estimated standard errors of the estimated parameters vector.
-#'   \item \code{crit} a vector containing the information criteria, Akaike's information criterion (AIC), Baysian information criterion (BIC), Hannan–Quinn information criterion (HQ).
+#'   \item \code{crit} a vector containing the information criteria, Akaike's information criterion (AIC), Baysian information criterion (BIC), Hannan–Quinn information criterion (HQ), calculated according to Louis, T. A. (1982).
 #'   \item \code{pvalue} p-value of the estimated parameters vector.
 #'   \item \code{n} number of observations in the dataset.
 #'   \item \code{p} number of covariates associated with failure times (event of interest times).
@@ -825,7 +825,6 @@ Esp_DerivParc_MEP <-  function( X_T, X_C,delta_T,delta_C, beta_T, beta_C, alpha,
 #' }
 #' @examples
 #' \dontrun{
-#' # MEP approach:
 #' model_MEP_dep(formula = time ~ x1 | x3, data=KidneyMimic, delta_t=KidneyMimic$delta_t,
 #'               delta_c=KidneyMimic$delta_c, ident=KidneyMimic$ident, Num_intervals=15)
 #' }

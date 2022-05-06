@@ -1,4 +1,3 @@
-# funcao sobrevivencia para o modelo MEP
 plot.weibull.t <- function(object){
   X_T <- object$X_T
   bi <- object$bi
@@ -12,19 +11,17 @@ plot.weibull.t <- function(object){
   }
 
   w_i <- rowMeans(bi)
-  sobrev_T <- exp(-risco_a_T*exp(X_T%*%beta_T + w_i))  # risco_a_T: risco acumulado calculado na ?ltima itera??o; beta_T: valores estimados que est?o no output
+  sobrev_T <- exp(-risco_a_T*exp(X_T%*%beta_T + w_i))
   sobrev_T <- as.data.frame(sobrev_T)
   names(sobrev_T)[1] <- "sobrev_T"
 
   teste_frame <- as.data.frame(cbind(tempo, X_T, risco_a_T, w_i, sobrev_T))
-  o <- order(teste_frame$tempo)  #ordeno os dados
+  o <- order(teste_frame$tempo)
   teste_frame <- teste_frame[o,]
 
-  return(plot(teste_frame$tempo,teste_frame$sobrev_T, xlab = "Follow−up time", ylab = "Survival probability of T", main = "Fit with Weibull distribution") + lines(lowess(teste_frame$sobrev_T~teste_frame$tempo), col='red', lwd=2))
+  return(plot(teste_frame$tempo,teste_frame$sobrev_T, xlab = "Follow up time", ylab = "Survival probability of T", main = "Fit with Weibull distribution") + lines(lowess(teste_frame$sobrev_T~teste_frame$tempo), col='red', lwd=2))
 }
 
-# OBS Plot weibull C --- referência da função lowess (função não-monótona) por causa da suavização
-# funcao sobrevivencia para o modelo MEP
 plot.weibull.c <- function(object){
   X_C <- object$X_C
   bi <- object$bi
@@ -41,22 +38,19 @@ plot.weibull.c <- function(object){
   w_i <- rowMeans(bi)
   alpha <- object[[1]][(5+p+q)]
 
-  sobrev_C <- exp(-risco_a_C*exp(X_C%*%beta_C + alpha*w_i)) # risco_a_C: risco acumulado calculado na ?ltima itera??o; beta_C e aplha: valores estimados que est?o no output
+  sobrev_C <- exp(-risco_a_C*exp(X_C%*%beta_C + alpha*w_i))
 
   sobrev_C <- as.data.frame(sobrev_C)
   names(sobrev_C)[1] <- "sobrev_C"
 
   teste_frame <- as.data.frame(cbind(tempo, X_C, risco_a_C, w_i, sobrev_C))
-  o <- order(teste_frame$tempo)  #ordeno os dados
+  o <- order(teste_frame$tempo)
   teste_frame <- teste_frame[o,]
   tempo <- teste_frame$tempo
 
-  return(plot(teste_frame$tempo,teste_frame$sobrev_C, xlab = "Follow−up time", ylab = "Survival probability of C", main = "Fit with Weibull distribution") + lines(lowess(teste_frame$sobrev_C~teste_frame$tempo), col='red', lwd=2))
+  return(plot(teste_frame$tempo,teste_frame$sobrev_C, xlab = "Follow up time", ylab = "Survival probability of C", main = "Fit with Weibull distribution") + lines(lowess(teste_frame$sobrev_C~teste_frame$tempo), col='red', lwd=2))
 }
 
-## MEP ====================
-
-# funcao sobrevivencia para o modelo MEP
 plot.mep.t <- function(object){
   X_T <- object$X_T
   bi <- object$bi
@@ -70,15 +64,15 @@ plot.mep.t <- function(object){
   }
 
   w_i <- rowMeans(bi)
-  sobrev_T <- exp(-risco_a_T*exp(X_T%*%beta_T + w_i))  # risco_a_T: risco acumulado calculado na ?ltima itera??o; beta_T: valores estimados que est?o no output
+  sobrev_T <- exp(-risco_a_T*exp(X_T%*%beta_T + w_i))
   sobrev_T <- as.data.frame(sobrev_T)
   names(sobrev_T)[1] <- "sobrev_T"
 
   teste_frame <- as.data.frame(cbind(tempo, X_T, risco_a_T, w_i, sobrev_T))
-  o <- order(teste_frame$tempo)  #ordeno os dados
+  o <- order(teste_frame$tempo)
   teste_frame <- teste_frame[o,]
 
-  return(plot(teste_frame$tempo,teste_frame$sobrev_T, xlab = "Follow−up time", ylab = "Survival probability of T", main = "Fit with piecewise exponential distribution") + lines(lowess(teste_frame$sobrev_T~teste_frame$tempo), col='red', lwd=2))
+  return(plot(teste_frame$tempo,teste_frame$sobrev_T, xlab = "Follow up time", ylab = "Survival probability of T", main = "Fit with piecewise exponential distribution") + lines(lowess(teste_frame$sobrev_T~teste_frame$tempo), col='red', lwd=2))
 }
 
 plot.mep.c <- function(object){
@@ -98,15 +92,15 @@ plot.mep.c <- function(object){
   w_i <- rowMeans(bi)
   alpha <- object[[1]][(p+bmax+q+1)]
 
-  sobrev_C <- exp(-risco_a_C*exp(X_C%*%beta_C + alpha*w_i)) # risco_a_C: risco acumulado calculado na ?ltima itera??o; beta_C e aplha: valores estimados que est?o no output
+  sobrev_C <- exp(-risco_a_C*exp(X_C%*%beta_C + alpha*w_i))
 
   sobrev_C <- as.data.frame(sobrev_C)
   names(sobrev_C)[1] <- "sobrev_C"
 
   teste_frame <- as.data.frame(cbind(tempo, X_C, risco_a_C, w_i, sobrev_C))
-  o <- order(teste_frame$tempo)  #ordeno os dados
+  o <- order(teste_frame$tempo)
   teste_frame <- teste_frame[o,]
   tempo <- teste_frame$tempo
 
-  return(plot(teste_frame$tempo,teste_frame$sobrev_C, xlab = "Follow−up time", ylab = "Survival probability of C", main = "Fit with piecewise exponential distribution") + lines(lowess(teste_frame$sobrev_C~teste_frame$tempo), col='red', lwd=2))
+  return(plot(teste_frame$tempo,teste_frame$sobrev_C, xlab = "Follow up time", ylab = "Survival probability of C", main = "Fit with piecewise exponential distribution") + lines(lowess(teste_frame$sobrev_C~teste_frame$tempo), col='red', lwd=2))
 }

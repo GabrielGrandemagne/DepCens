@@ -39,6 +39,12 @@ library(DepCens)
 delta_t <- ifelse(KidneyMimic$cens==1,1,0)
 delta_c <- ifelse(KidneyMimic$cens==2,1,0)
 fit <- dependent.censoring(formula = time ~ x1 + x2 | x3 + x1, data=KidneyMimic, delta_t=delta_t,
-                           delta_c=delta_c, ident=KidneyMimic$ident, approach = "weibull")
+                           delta_c=delta_c, ident=KidneyMimic$ident, dist = "weibull")
 summary_dc(fit)
+```
+
+You can also plot the survival function
+
+```{r plot_dc}
+plot_dc(fit, scenario = "t")
 ```

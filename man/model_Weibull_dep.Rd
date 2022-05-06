@@ -7,9 +7,9 @@
 model_Weibull_dep(formula, data, delta_t, delta_c, ident)
 }
 \arguments{
-\item{formula}{an object of class "formula" (or one that can be coerced to that class): should be used as 'time ~ failure covariates | informative covariates'.}
+\item{formula}{an object of class "formula": should be used as 'time ~ failure covariates | informative covariates'.}
 
-\item{data}{an optional data frame, list or environment (or object coercible by as.data.frame to a data frame) containing the variables in the model.}
+\item{data}{an optional data frame, list or environment containing the variables.}
 
 \item{delta_t}{Indicator function of the event of interest.}
 
@@ -22,7 +22,7 @@ model_Weibull_dep returns an object of class "dcensoring" containing the fitted 
 \itemize{
   \item \code{param_est} a vector containing estimated parameters (dependency parameter, regression coefficients associated with failure times, regression coefficients associated with dependent censoring times, and time distribution parameters (Weibull or piecewise exponential)).
   \item \code{stde} a vector containing the estimated standard errors of the estimated parameters vector.
-  \item \code{crit} a vector containing the information criteria, Akaike's information criterion (AIC), Baysian information criterion (BIC), Hannan–Quinn information criterion (HQ).
+  \item \code{crit} a vector containing the information criteria, Akaike's information criterion (AIC), Baysian information criterion (BIC), Hannan–Quinn information criterion (HQ), calculated according to Louis, T. A. (1982).
   \item \code{pvalue} p-value of the estimated parameters vector.
   \item \code{n} number of observations in the dataset.
   \item \code{p} number of covariates associated with failure times (event of interest times).
@@ -40,7 +40,7 @@ model_Weibull_dep returns an object of class "dcensoring" containing the fitted 
 }
 }
 \description{
-model_Weibull_dep function estimates the parameters of the Weibull model with dependent censoring, considering the frailty model to capture the dependence between failure and dependent censoring times, as well as the clusters variability
+This function estimates the parameters of the Weibull model with dependent censoring, considering the frailty model to estimate the clusters variability and a parameter that capture the dependence between failure and dependent censoring times.
 }
 \examples{
 \dontrun{
