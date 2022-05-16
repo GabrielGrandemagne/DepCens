@@ -14,4 +14,7 @@ Found the following (possibly) invalid DOIs:
     Status: Service Unavailable
     Message: 503
 
-Service is unavailable at the moment. DOI: 10.1002/bimj.201800391 checks out.
+Service was unavailable at that moment. DOI: 10.1002/bimj.201800391 checks out when manually checking.
+
+## Downstream dependencies
+There are currently no downstream dependencies for this package.
