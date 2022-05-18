@@ -34,7 +34,7 @@
 #'   \item \code{time} a vector of the observable times.
 #' }
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' library(DepCens)
 #' delta_t <- ifelse(KidneyMimic$cens==1,1,0)
 #' delta_c <- ifelse(KidneyMimic$cens==2,1,0)

@@ -9,10 +9,10 @@
 #' @return a survival function graph of the fitted model.
 #'
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' fit <- dependent.censoring(formula = time ~ x1 | x3, data=KidneyMimic, delta_t=KidneyMimic$delta_t,
 #'                           delta_c=KidneyMimic$delta_c, ident=KidneyMimic$ident, dist = "mep")
-#' plot.dc(fit, scenario = "both")
+#' plot_dc(fit, scenario = "both")
 #'}
 #'
 plot_dc <- function(object, scenario  = c("t", "c", "both")){

@@ -59,7 +59,7 @@ dependent.censoring can be used to fit survival data with dependent censoring, i
 This function estimates the parameters of the Piecewise exponential model (dist = "mep") or Weibull model (dist = "weibull") with dependent censoring, considering the frailty model to estimate the clusters variability and a parameter that captures the dependence between failure and dependent censoring times.
 }
 \examples{
-\dontrun{
+\donttest{
 library(DepCens)
 delta_t <- ifelse(KidneyMimic$cens==1,1,0)
 delta_c <- ifelse(KidneyMimic$cens==2,1,0)

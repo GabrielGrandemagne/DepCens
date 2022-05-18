@@ -18,3 +18,10 @@ Service was unavailable at that moment. DOI: 10.1002/bimj.201800391 checks out w
 
 ## Downstream dependencies
 There are currently no downstream dependencies for this package.
+
+## Resubmission
+This is a resubmission. In this version I have:
+
+* Omitted the examples of the functions we don't want to export
+
+* Replaced "\dontrun{}" with "\donttest{}" in the examples as they can be executed but take longer than 5 seconds
