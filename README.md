@@ -24,7 +24,7 @@ The latest development version can be installed from
 [GitHub](https://github.com/) with:
 
 ``` r
-#install.packages("devtools")
+install.packages("devtools")
 devtools::install_github('GabrielGrandemagne/DepCens')
 ```
 
@@ -39,35 +39,32 @@ delta_t <- ifelse(KidneyMimic$cens==1,1,0)
 delta_c <- ifelse(KidneyMimic$cens==2,1,0)
 fit <- dependent.censoring(formula = time ~ x1 + x2 | x3 + x1, data=KidneyMimic, delta_t=delta_t,
                            delta_c=delta_c, ident=KidneyMimic$ident, dist = "weibull")
-#> Warning in sqrt(diag(Var)): NaNs produzidos
-#> Warning: The algorithm did not converge. It might converge if you run the
-#> function again.
 summary_dc(fit)
 #> 
 #> Weibull approach
 #> 
 #> Name  Estimate    Std. Error  CI INF      CI SUP      p-value     
-#> Alpha    1.309432    NaN NaN NaN NaN 
-#> Sigma    0.7130081   NaN NaN NaN 
+#> Alpha    1.386908    0.3175058   0.7645967   2.009219    1.253e-05   
+#> Sigma    0.6473139   0.219075    0.2179268   1.076701    
 #> 
 #> Coefficients T:
 #> 
 #> Name  Estimate    Std. Error  CI INF      CI SUP      p-value     
-#> x1   0.08267382  0.01759489  0.04818784  0.1171598   2.618e-06   
-#> x2   -1.415567   0.245838    -1.897410   -0.9337248  8.505e-09   
+#> x1   0.08110233  0.02140495  0.03914863  0.123056    0.0001513   
+#> x2   -1.399794   0.2460258   -1.882005   -0.9175837  1.273e-08   
 #> 
 #> Coefficients C:
 #> 
 #> Name  Estimate    Std. Error  CI INF      CI SUP      p-value     
-#> x3   0.2241258   0.1811256   -0.1308803  0.5791318   0.2159  
-#> x1   0.1933142   0.02558896  0.1431598   0.2434685   4.202e-14   
+#> x3   0.2307375   0.1853012   -0.1324529  0.5939279   0.2131  
+#> x1   0.1953483   0.03854422  0.1198016   0.2708949   4.017e-07   
 #> 
 #> ----------------------------------------------------------------------------------
 #> 
 #> Information criteria:
 #> 
 #> AIC   BIC      HQ    
-#> 403.598 433.2829 415.611
+#> 404.3393 434.0241 416.3523
 ```
 
 *KidneyMimic* is our simulated data frame. For more information check
