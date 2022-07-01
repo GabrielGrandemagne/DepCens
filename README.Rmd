@@ -18,15 +18,21 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
-Dependent censoring regression models for survival multivariate data. These models are based on extensions of the frailty models, capable to accommodating the dependence between failure and censoring times, with Weibull and piecewise exponential marginal distributions.
+The package *DepCens* uses dependent censoring regression models for survival multivariate data. These models are based on extensions of the frailty models, capable to accommodating the dependence between failure and censoring times, with Weibull and piecewise exponential marginal distributions.
 
 ## Installation
 
-You can install the development version of DepCens from [GitHub](https://github.com/) with:
+The latest stable version can be installed from CRAN:
 
-```{r}
+```{r, eval=FALSE}
+install.packages('DepCens')
+```
+
+The latest development version can be installed from [GitHub](https://github.com/) with:
+
+```{r, eval=FALSE}
 #install.packages("devtools")
-#devtools::install_github("GabrielGrandemagne/DepCens")
+devtools::install_github('GabrielGrandemagne/DepCens')
 ```
 
 ## Example
@@ -41,6 +47,12 @@ delta_c <- ifelse(KidneyMimic$cens==2,1,0)
 fit <- dependent.censoring(formula = time ~ x1 + x2 | x3 + x1, data=KidneyMimic, delta_t=delta_t,
                            delta_c=delta_c, ident=KidneyMimic$ident, dist = "weibull")
 summary_dc(fit)
+```
+
+*KidneyMimic* is our simulated data frame. For more information check the documentation for stored datasets.
+
+```{r}
+head(KidneyMimic)
 ```
 
 You can also plot the survival function
