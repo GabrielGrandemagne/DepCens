@@ -7,8 +7,8 @@
 #' @import Formula
 #' @import survival
 #' @import stats
+#' @import dlm
 #' @importFrom rootSolve multiroot
-#' @importFrom dlm arms
 #' @importFrom matrixStats colProds
 #' @importFrom graphics lines
 #'
