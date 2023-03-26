@@ -1,20 +1,31 @@
 ## R CMD check results
 There were no ERRORs or WARNINGs. 
 
-There was 1 NOTE:
+There was 2 NOTES:
 
 * checking CRAN incoming feasibility ... NOTE
-Maintainer: 'Silvana Schneider <schneider.sil@gmail.com>'
+Maintainer: 'Silvana Schneider <silvana.schneider@ufrgs.br>'
 
 New submission
+
+Package was archived on CRAN
+
+CRAN repository db overrides:
+  X-CRAN-Comment: Archived on 2022-10-23 as requires archived package
+    'dlm'.
 
 Found the following (possibly) invalid DOIs:
   DOI: 10.1002/bimj.201800391
     From: DESCRIPTION
-    Status: Service Unavailable
-    Message: 503
+    Status: Forbidden
+    Message: 403
+    
+* checking for detritus in the temp directory ... NOTE
 
-Service was unavailable at that moment. DOI: 10.1002/bimj.201800391 checks out when manually checking.
+  Found the following files/directories:
+    'lastMiKTeXException'
+    
+dlm package is already back on CRAN, this should not be a problem anymore.
 
 ## Downstream dependencies
 There are currently no downstream dependencies for this package.
@@ -22,6 +33,4 @@ There are currently no downstream dependencies for this package.
 ## Resubmission
 This is a resubmission. In this version I have:
 
-* Omitted the examples of the functions we don't want to export
-
-* Replaced "\dontrun{}" with "\donttest{}" in the examples as they can be executed but take longer than 5 seconds
+* Modified the appointed url, following moved content as appropriate
