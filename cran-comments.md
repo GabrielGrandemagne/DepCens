@@ -4,6 +4,7 @@ There were no ERRORs or WARNINGs.
 There was 2 NOTES:
 
 * checking CRAN incoming feasibility ... NOTE
+
 Maintainer: 'Silvana Schneider <silvana.schneider@ufrgs.br>'
 
 New submission
